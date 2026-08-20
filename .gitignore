@@ -1,0 +1,6 @@
+# 同步服务器数据目录（本地运行时生成）
+data/
+
+# Node
+node_modules/
+npm-debug.log*
