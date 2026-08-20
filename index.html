@@ -1,0 +1,1540 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="format-detection" content="telephone=no">
+<title>数学星球 · Math Planet</title>
+<style>
+  :root{
+    --sky1:#8ec5fc; --sky2:#e0c3fc;
+    --card:#ffffff; --ink:#333a4d; --sub:#8a93a6;
+    --ok:#2ecc71; --bad:#ff6b6b; --warn:#feca57;
+    --fm:#ff9f43; --dn:#5f9df7; --ae:#a55eea;
+    --r:22px;
+  }
+  *{box-sizing:border-box; -webkit-tap-highlight-color:transparent;}
+  html,body{margin:0; padding:0;}
+  body{
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei",sans-serif;
+    background:linear-gradient(160deg,var(--sky1),var(--sky2)) fixed;
+    color:var(--ink); min-height:100vh; user-select:none; -webkit-user-select:none;
+  }
+  #app{max-width:480px; margin:0 auto; padding:14px 14px 40px; min-height:100vh;}
+
+  .card{background:var(--card); border-radius:var(--r); box-shadow:0 8px 24px rgba(60,80,140,.18); padding:16px; margin-bottom:14px;}
+  .btn{
+    display:block; width:100%; border:none; cursor:pointer;
+    border-radius:16px; padding:14px 12px; font-size:17px; font-weight:600;
+    color:#fff; background:var(--dn); margin-top:10px;
+    transition:transform .08s ease;
+  }
+  .btn:active{transform:scale(.96);}
+  .btn.orange{background:var(--fm);} .btn.purple{background:var(--ae);} .btn.green{background:var(--ok);}
+  .btn.ghost{background:#eef1f8; color:var(--ink);} .btn.red{background:var(--bad);}
+  .btn.small{padding:9px 8px; font-size:14px; border-radius:12px; display:inline-block; width:auto; margin:4px 4px 0 0;}
+  .en{font-size:13px; color:var(--sub); font-weight:400; margin-left:4px;}
+  .mono{font-family:"SF Mono",Menlo,Consolas,monospace;}
+
+  .topbar{display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;}
+  .topbar .t{font-size:22px; font-weight:800; letter-spacing:.5px;}
+  .topbar .sub{font-size:12px; color:#fff; opacity:.85;}
+  .iconbtn{background:rgba(255,255,255,.35); border:none; border-radius:50%; width:42px; height:42px; font-size:20px; cursor:pointer;}
+
+  .hud{display:flex; justify-content:space-around; text-align:center; padding:12px 0;}
+  .hud .v{font-size:20px; font-weight:800;}
+  .hud .k{font-size:12px; color:var(--sub);}
+
+  .themeCard{display:flex; align-items:center; padding:16px; margin-bottom:12px;}
+  .themeCard .ic{font-size:38px; margin-right:14px;}
+  .themeCard .nm{font-size:18px; font-weight:700;}
+  .themeCard .pv{font-size:12px; color:var(--sub);}
+  .themeCard .bar{height:8px; border-radius:4px; background:#edf0f7; margin-top:6px; overflow:hidden;}
+  .themeCard .bar i{display:block; height:100%; border-radius:4px;}
+
+  .lvlRow{display:flex; align-items:center; justify-content:space-between; padding:12px 14px; margin-bottom:10px;}
+  .lvlRow .nm{font-size:16px; font-weight:700;}
+  .lvlRow .st{font-size:13px; color:var(--sub);}
+  .lvlRow.locked{opacity:.55; filter:grayscale(.8);}
+  .chip{display:inline-block; background:#f3f5fb; border-radius:10px; padding:5px 10px; font-size:13px; margin:3px 3px 0 0; color:#5a6478;}
+  .chip b{color:var(--ae);}
+
+  .qcard{min-height:150px; display:flex; flex-direction:column; justify-content:center;}
+  .qcard .qp{font-size:22px; font-weight:700; line-height:1.5;}
+  .opt{display:block; width:100%; text-align:left; background:#f6f8fd; border:2px solid #e6eaf4; border-radius:16px; padding:14px; font-size:17px; margin-top:10px; cursor:pointer; transition:all .12s;}
+  .opt:active{transform:scale(.97);}
+  .opt.right{background:#e9fbf1; border-color:var(--ok);}
+  .opt.wrong{background:#ffecec; border-color:var(--bad);}
+
+  .pad{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:12px;}
+  .pad button{height:58px; font-size:22px; font-weight:700; border:none; border-radius:14px; background:#f6f8fd; color:var(--ink); cursor:pointer;}
+  .pad button:active{background:#e4e9f5;}
+  .pad button.op{background:var(--dn); color:#fff;}
+  .pad button.ok{background:var(--ok); color:#fff;}
+  .numdisp{font-size:34px; font-weight:800; text-align:center; background:#f6f8fd; border-radius:14px; padding:10px; min-height:58px; letter-spacing:2px;}
+
+  .dots{display:flex; gap:6px; margin:8px 0;}
+  .dots i{width:10px; height:10px; border-radius:50%; background:#dde3f0;}
+  .dots i.now{background:var(--dn);}
+  .dots i.done{background:var(--ok);}
+  .hintbox{background:#fff8e1; border-left:4px solid var(--warn); border-radius:8px; padding:10px; margin-top:10px; font-size:15px; display:none;}
+  .expbox{background:#eefaf3; border-left:4px solid var(--ok); border-radius:8px; padding:10px; margin-top:10px; font-size:15px; display:none;}
+  .expbox.bad{border-color:var(--bad); background:#fff1f0;}
+  .fb{font-size:19px; font-weight:800; margin-top:10px; display:none;}
+  .fb.good{color:var(--ok);} .fb.bad{color:var(--bad);}
+
+  .grid3{display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin-top:10px;}
+  .mini{text-align:center; padding:10px 4px; border-radius:14px; background:#f6f8fd;}
+  .mini .ic{font-size:26px;}
+  .mini .nm{font-size:12px; color:var(--sub); margin-top:4px;}
+  .mini.locked{opacity:.5; filter:grayscale(.9);}
+
+  .badge{display:flex; align-items:center; padding:10px; border-radius:14px; background:#f6f8fd; margin-bottom:8px;}
+  .badge .ic{font-size:28px; margin-right:10px;}
+  .badge .nm{font-size:15px; font-weight:600;}
+  .badge .ds{font-size:12px; color:var(--sub);}
+  .badge.off{opacity:.45; filter:grayscale(1);}
+
+  .toast{position:fixed; top:14px; left:50%; transform:translateX(-50%) translateY(-80px); background:rgba(40,50,80,.92); color:#fff; padding:10px 18px; border-radius:30px; font-size:15px; z-index:99; transition:transform .3s; max-width:90vw; text-align:center;}
+  .toast.on{transform:translateX(-50%) translateY(0);}
+
+  .confetti{position:fixed; top:-12px; width:10px; height:10px; z-index:98; pointer-events:none; animation:fall linear forwards;}
+  @keyframes fall{to{transform:translateY(105vh) rotate(720deg); opacity:.9;}}
+  @keyframes pop{0%{transform:scale(.5); opacity:0;} 70%{transform:scale(1.15);} 100%{transform:scale(1); opacity:1;}}
+  @keyframes shake{0%,100%{transform:translateX(0);} 25%{transform:translateX(-8px);} 75%{transform:translateX(8px);}}
+  @keyframes floaty{0%,100%{transform:translateY(0);} 50%{transform:translateY(-6px);}}
+  .pop{animation:pop .35s ease;}
+  .shake{animation:shake .3s ease;}
+  .floaty{animation:floaty 2.4s ease-in-out infinite;}
+
+  .resbig{font-size:64px; text-align:center; animation:pop .5s ease;}
+  .resmsg{font-size:20px; font-weight:800; text-align:center; margin-top:8px;}
+  .resstars{text-align:center; font-size:26px; margin-top:6px; letter-spacing:4px;}
+  .cal{display:grid; grid-template-columns:repeat(7,1fr); gap:4px; margin-top:8px;}
+  .cal div{height:26px; border-radius:6px; background:#edf0f7; font-size:9px; display:flex; align-items:center; justify-content:center; color:#b6bdce;}
+  .cal div.on{background:var(--ok); color:#fff; font-weight:700;}
+  .cal div.today{outline:2px solid var(--dn);}
+
+  input[type=text],input[type=password],textarea,select{width:100%; border:2px solid #e6eaf4; border-radius:12px; padding:11px; font-size:16px; font-family:inherit; margin-top:6px; background:#fff; color:var(--ink);}
+  label.f{display:block; font-size:13px; color:var(--sub); margin-top:12px; font-weight:600;}
+  .row2{display:flex; gap:10px;} .row2>div{flex:1;}
+  .tabs{display:flex; gap:6px; flex-wrap:wrap; margin-bottom:12px;}
+  .tabs button{border:none; border-radius:20px; padding:8px 14px; font-size:14px; background:#eef1f8; color:var(--ink); cursor:pointer; font-weight:600;}
+  .tabs button.on{background:var(--dn); color:#fff;}
+  .qa{background:#f8fafd; border-radius:12px; padding:10px; margin-bottom:8px; font-size:14px;}
+  .qa .a{color:var(--ok); font-weight:700;}
+  .qa .e{color:#5a6478; font-size:13px; margin-top:4px;}
+  .del{background:#ffecec; color:var(--bad); border:none; border-radius:10px; padding:5px 12px; font-size:12px; margin-top:6px; cursor:pointer;}
+  .note{font-size:12px; color:var(--sub); margin-top:6px; line-height:1.5;}
+  .bigstar{text-align:center; font-size:44px;}
+  .backlink{display:inline-block; color:#fff; background:rgba(255,255,255,.3); border:none; border-radius:30px; padding:7px 16px; font-size:15px; cursor:pointer; font-weight:600;}
+  .revbox{max-height:240px; overflow:auto;}
+  h3{margin:8px 0 6px; font-size:16px;}
+  .subtitle{font-size:13px; color:var(--sub); margin-bottom:10px;}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="toast" class="toast"></div>
+<script>
+/* ============================================================
+   数学星球 Math Planet — 亲子互动数学练习 (Grade 6)
+   主题: 因数与倍数 / 正负数 / 代数表达式
+   ============================================================ */
+
+/* ---------- 工具 ---------- */
+function $(id){ return document.getElementById(id); }
+function esc(s){ return String(s==null?'':s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+function uid(){ return 'c' + Date.now().toString(36) + Math.random().toString(36).slice(2,6); }
+function todayStr(){ var d=new Date(); return d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2); }
+function bi(zh,en){
+  if(!en || en===zh) return esc(zh);
+  if(state.lang==='en') return esc(en) + (state.showEn ? ' <span class="en">'+esc(zh)+'</span>' : '');
+  return esc(zh) + (state.showEn ? ' <span class="en">'+esc(en)+'</span>' : '');
+}
+function toast(msg){ var t=$('toast'); t.innerHTML=msg; t.classList.add('on'); clearTimeout(toast._t); toast._t=setTimeout(function(){ t.classList.remove('on'); },2200); }
+
+/* ---------- 音效 ---------- */
+var actx=null;
+function beep(freq,dur,delay,type){
+  if(!state.sound) return;
+  try{
+    if(!actx) actx=new (window.AudioContext||window.webkitAudioContext)();
+    var o=actx.createOscillator(), g=actx.createGain();
+    o.type=type||'sine'; o.frequency.value=freq;
+    var t0=actx.currentTime+(delay||0);
+    g.gain.setValueAtTime(0.18,t0); g.gain.exponentialRampToValueAtTime(0.001,t0+dur);
+    o.connect(g); g.connect(actx.destination); o.start(t0); o.stop(t0+dur);
+  }catch(e){}
+}
+function sndOk(){ beep(523,.12,0); beep(659,.12,.1); beep(784,.18,.2); }
+function sndBad(){ beep(233,.15,0,'sawtooth'); beep(185,.2,.12,'sawtooth'); }
+function sndStar(){ beep(880,.12,0,'triangle'); }
+function speakQ(){
+  try{
+    if(!('speechSynthesis' in window)) { toast('设备不支持语音'); return; }
+    var cur=QUIZ && QUIZ.list[QUIZ.idx];
+    if(!cur) return;
+    var txt = state.lang==='en' ? (cur.q.q.en||cur.q.q.zh) : cur.q.q.zh;
+    var u=new SpeechSynthesisUtterance(txt);
+    u.lang = state.lang==='en' ? 'en-US' : 'zh-CN';
+    u.rate=0.9;
+    window.speechSynthesis.cancel(); window.speechSynthesis.speak(u);
+  }catch(e){}
+}
+
+/* ---------- 题库 (36 题, 英中双语) ---------- */
+var BUILTIN = [
+  /* ===== 因数与倍数 Factors & Multiples ===== */
+  {id:'fm-l1-1',theme:'fm',level:1,type:'mc',q:{zh:'下面哪个数是 12 的因数？',en:'Which number is a factor of 12?'},
+   options:[{zh:'3',en:'3'},{zh:'5',en:'5'},{zh:'7',en:'7'},{zh:'9',en:'9'}],ans:0,
+   hint:{zh:'用 12 除以每个数，能整除的就是因数。',en:'Divide 12 by each number — factors divide exactly.'},
+   exp:{zh:'12 ÷ 3 = 4，能整除，所以 3 是 12 的因数；5、7、9 都不能整除 12。',en:'12 ÷ 3 = 4, so 3 is a factor. 5, 7 and 9 do not divide 12 exactly.'}},
+
+  {id:'fm-l1-2',theme:'fm',level:1,type:'mc',q:{zh:'下面哪个数是 6 的倍数？',en:'Which number is a multiple of 6?'},
+   options:[{zh:'14',en:'14'},{zh:'22',en:'22'},{zh:'24',en:'24'},{zh:'33',en:'33'}],ans:2,
+   hint:{zh:'倍数 = 6 × 某个整数。',en:'A multiple is 6 × a whole number.'},
+   exp:{zh:'6 × 4 = 24，所以 24 是 6 的倍数；14、22、33 都不是 6 的倍数。',en:'6 × 4 = 24, so 24 is a multiple of 6.'}},
+
+  {id:'fm-l1-3',theme:'fm',level:1,type:'mc',q:{zh:'下面哪个数是质数？',en:'Which number is prime?'},
+   options:[{zh:'9',en:'9'},{zh:'11',en:'11'},{zh:'15',en:'15'},{zh:'21',en:'21'}],ans:1,
+   hint:{zh:'质数只有 1 和它本身两个因数。',en:'A prime has exactly two factors: 1 and itself.'},
+   exp:{zh:'11 只能被 1 和 11 整除，是质数；9 = 3×3，15 = 3×5，21 = 3×7 都是合数。',en:'11 divides only by 1 and 11. 9, 15 and 21 have more factors.'}},
+
+  {id:'fm-l1-4',theme:'fm',level:1,type:'num',q:{zh:'18 一共有几个因数？',en:'How many factors does 18 have?'},ans:6,
+   hint:{zh:'从小到大成对找：1×18, 2×9, 3×6。',en:'Find factor pairs: 1×18, 2×9, 3×6.'},
+   exp:{zh:'18 的因数：1, 2, 3, 6, 9, 18，共 6 个。',en:'Factors of 18: 1, 2, 3, 6, 9, 18 — that is 6 factors.'}},
+
+  {id:'fm-l2-1',theme:'fm',level:2,type:'mc',q:{zh:'12 和 18 的最大公因数（HCF）是多少？',en:'What is the HCF of 12 and 18?'},
+   options:[{zh:'3',en:'3'},{zh:'6',en:'6'},{zh:'9',en:'9'},{zh:'12',en:'12'}],ans:1,
+   hint:{zh:'列出 12 和 18 的所有因数，找公共的最大一个。',en:'List all factors of both numbers and pick the largest common one.'},
+   exp:{zh:'12 的因数：1,2,3,4,6,12；18 的因数：1,2,3,6,9,18；公共的：1,2,3,6 → 最大是 6。',en:'Common factors: 1, 2, 3, 6 → the greatest is 6.'}},
+
+  {id:'fm-l2-2',theme:'fm',level:2,type:'mc',q:{zh:'4 和 6 的最小公倍数（LCM）是多少？',en:'What is the LCM of 4 and 6?'},
+   options:[{zh:'8',en:'8'},{zh:'12',en:'12'},{zh:'18',en:'18'},{zh:'24',en:'24'}],ans:1,
+   hint:{zh:'分别列倍数：4,8,12… 和 6,12,18…',en:'List multiples: 4,8,12… and 6,12,18…'},
+   exp:{zh:'4 的倍数：4,8,12,16…；6 的倍数：6,12,18…；第一个公共的是 12。',en:'The first common multiple of 4 and 6 is 12.'}},
+
+  {id:'fm-l2-3',theme:'fm',level:2,type:'mc',q:{zh:'用正方形地砖铺一个长 36 厘米、宽 24 厘米的长方形地面，地砖边长最大是多少厘米？',en:'Square tiles cover a 36 cm by 24 cm floor. What is the largest possible tile side length?'},
+   options:[{zh:'6 厘米',en:'6 cm'},{zh:'8 厘米',en:'8 cm'},{zh:'12 厘米',en:'12 cm'},{zh:'18 厘米',en:'18 cm'}],ans:2,
+   hint:{zh:'地砖边长要同时整除 36 和 24，所以是最大公因数。',en:'The side length must divide both 36 and 24 — it is the HCF.'},
+   exp:{zh:'HCF(36, 24) = 12，所以最大边长为 12 厘米。',en:'HCF(36, 24) = 12, so the largest tile side is 12 cm.'}},
+
+  {id:'fm-l2-4',theme:'fm',level:2,type:'num',q:{zh:'6 和 8 的最小公倍数（LCM）是多少？',en:'What is the LCM of 6 and 8?'},ans:24,
+   hint:{zh:'6 的倍数：6,12,18,24…；8 的倍数：8,16,24…',en:'Multiples of 6: 6,12,18,24… of 8: 8,16,24…'},
+   exp:{zh:'6 和 8 的第一个公倍数是 24。',en:'The first common multiple of 6 and 8 is 24.'}},
+
+  {id:'fm-l3-1',theme:'fm',level:3,type:'num',q:{zh:'6 路车每 6 分钟一班，8 路车每 8 分钟一班。两车同时发车后，至少多少分钟后又同时发车？',en:'Bus A leaves every 6 minutes, Bus B every 8 minutes. They leave together now — after how many minutes will they leave together again?'},ans:24,
+   hint:{zh:'同时发车的时间间隔 = LCM(6, 8)。',en:'The gap is the LCM of 6 and 8.'},
+   exp:{zh:'LCM(6, 8) = 24，所以 24 分钟后再次同时发车。',en:'LCM(6, 8) = 24, so they leave together again after 24 minutes.'}},
+
+  {id:'fm-l3-2',theme:'fm',level:3,type:'num',q:{zh:'学校运动会 36 名男生、48 名女生分成小组，每组男生人数相同、女生人数也相同，每组最多多少人？',en:'36 boys and 48 girls form teams with the same number of boys and the same number of girls in each team. What is the largest team size?'},ans:12,
+   hint:{zh:'每组人数要同时整除 36 和 48 → 最大公因数。',en:'The team size must divide both 36 and 48 — use the HCF.'},
+   exp:{zh:'HCF(36, 48) = 12，每组最多 12 人（每组男 3 人、女 4 人，共 7 组）。',en:'HCF(36, 48) = 12, so the largest team has 12 members (7 teams).'}},
+
+  {id:'fm-l3-3',theme:'fm',level:3,type:'mc',q:{zh:'20 到 30 之间（含 20 和 30）有几个质数？',en:'How many prime numbers are there between 20 and 30?'},
+   options:[{zh:'1 个',en:'1'},{zh:'2 个',en:'2'},{zh:'3 个',en:'3'},{zh:'4 个',en:'4'}],ans:1,
+   hint:{zh:'逐个检查 21 到 29：哪些数只有 1 和它本身两个因数？',en:'Check each number from 21 to 29 — which have only two factors?'},
+   exp:{zh:'只有 23 和 29 是质数：23 = 1×23，29 = 1×29；其余（21,22,24,25,26,27,28）都有更多因数。',en:'Only 23 and 29 are prime. The others have more than two factors.'}},
+
+  {id:'fm-l3-4',theme:'fm',level:3,type:'mc',q:{zh:'一个数既是 6 的倍数又是 8 的倍数，小于 50，它最大是多少？',en:'A number is a multiple of both 6 and 8 and is less than 50. What is the largest such number?'},
+   options:[{zh:'24',en:'24'},{zh:'36',en:'36'},{zh:'40',en:'40'},{zh:'48',en:'48'}],ans:3,
+   hint:{zh:'先找 6 和 8 的公倍数，再取小于 50 的最大值。',en:'List common multiples of 6 and 8, then take the largest below 50.'},
+   exp:{zh:'公倍数：24, 48, 72… 小于 50 的最大公倍数是 48。',en:'Common multiples: 24, 48, 72… the largest below 50 is 48.'}},
+
+  /* ===== 正负数 Directed Numbers ===== */
+  {id:'dn-l1-1',theme:'dn',level:1,type:'num',q:{zh:'−5 + 8 = ?',en:'−5 + 8 = ?'},ans:3,
+   hint:{zh:'在数轴上从 −5 开始往右数 8 格。',en:'Start at −5 on the number line and move 8 steps right.'},
+   exp:{zh:'−5 + 8 = 3。',en:'−5 + 8 = 3.'}},
+
+  {id:'dn-l1-2',theme:'dn',level:1,type:'num',q:{zh:'3 − 7 = ?',en:'3 − 7 = ?'},ans:-4,
+   hint:{zh:'在数轴上从 3 开始往左数 7 格。',en:'Start at 3 and move 7 steps left.'},
+   exp:{zh:'3 − 7 = −4。',en:'3 − 7 = −4.'}},
+
+  {id:'dn-l1-3',theme:'dn',level:1,type:'mc',q:{zh:'−3 和 −5，哪个更大？',en:'Which is bigger: −3 or −5?'},
+   options:[{zh:'−3',en:'−3'},{zh:'−5',en:'−5'},{zh:'一样大',en:'Equal'},{zh:'无法比较',en:'Cannot compare'}],ans:0,
+   hint:{zh:'在数轴上，越靠右的数越大。',en:'On a number line, numbers to the right are bigger.'},
+   exp:{zh:'−3 在 −5 的右边，所以 −3 > −5。负数中，离 0 越近反而越大。',en:'−3 is to the right of −5, so −3 > −5. Among negatives, the closer to 0, the bigger.'}},
+
+  {id:'dn-l1-4',theme:'dn',level:1,type:'mc',q:{zh:'温度计显示 −2°C，这表示……',en:'A thermometer shows −2°C. This means…'},
+   options:[{zh:'比 0°C 高 2 度',en:'2°C above zero'},{zh:'比 0°C 低 2 度',en:'2°C below zero'},{zh:'正好是 0°C',en:'Exactly 0°C'},{zh:'比 0°C 低 8 度',en:'8°C below zero'}],ans:1,
+   hint:{zh:'“−”表示零下。',en:'The minus sign means "below zero".'},
+   exp:{zh:'−2°C 读作“零下 2 摄氏度”，比 0°C 低 2 度。',en:'−2°C is two degrees below zero.'}},
+
+  {id:'dn-l2-1',theme:'dn',level:2,type:'num',q:{zh:'−6 + (−3) = ?',en:'−6 + (−3) = ?'},ans:-9,
+   hint:{zh:'两个负数相加，结果会更“负”。',en:'Adding two negatives gives a more negative number.'},
+   exp:{zh:'−6 + (−3) = −9。',en:'−6 + (−3) = −9.'}},
+
+  {id:'dn-l2-2',theme:'dn',level:2,type:'num',q:{zh:'−4 − (−9) = ?',en:'−4 − (−9) = ?'},ans:5,
+   hint:{zh:'减去一个负数 = 加上它的相反数。',en:'Subtracting a negative is the same as adding its opposite.'},
+   exp:{zh:'−4 − (−9) = −4 + 9 = 5。',en:'−4 − (−9) = −4 + 9 = 5.'}},
+
+  {id:'dn-l2-3',theme:'dn',level:2,type:'num',q:{zh:'早晨气温 −3°C，中午升到 6°C，温度一共上升了多少度？',en:'Morning temperature is −3°C and noon is 6°C. How many degrees did it rise?'},ans:9,
+   hint:{zh:'温差 = 6 − (−3)。',en:'Rise = 6 − (−3).'},
+   exp:{zh:'6 − (−3) = 6 + 3 = 9°C。',en:'6 − (−3) = 6 + 3 = 9°C.'}},
+
+  {id:'dn-l2-4',theme:'dn',level:2,type:'num',q:{zh:'电梯在 5 层，下降 7 层后停在哪一层？',en:'A lift is on floor 5 and goes down 7 floors. Which floor is it on now?'},ans:-2,
+   hint:{zh:'5 − 7 = ?',en:'5 − 7 = ?'},
+   exp:{zh:'5 − 7 = −2，即地下 2 层。',en:'5 − 7 = −2, which is the 2nd basement floor.'}},
+
+  {id:'dn-l3-1',theme:'dn',level:3,type:'mc',q:{zh:'上午气温 −4°C，下午上升 10°C，晚上又下降 6°C。晚上温度是多少？',en:'Morning is −4°C. It rises 10°C in the afternoon, then falls 6°C at night. What is the night temperature?'},
+   options:[{zh:'−2°C',en:'−2°C'},{zh:'0°C',en:'0°C'},{zh:'6°C',en:'6°C'},{zh:'12°C',en:'12°C'}],ans:1,
+   hint:{zh:'−4 + 10 − 6 = ?',en:'−4 + 10 − 6 = ?'},
+   exp:{zh:'−4 + 10 = 6；6 − 6 = 0°C。',en:'−4 + 10 = 6, then 6 − 6 = 0°C.'}},
+
+  {id:'dn-l3-2',theme:'dn',level:3,type:'num',q:{zh:'(−3) + 7 − (−2) = ?',en:'(−3) + 7 − (−2) = ?'},ans:6,
+   hint:{zh:'从左到右：−3 + 7 = 4，再算 4 − (−2)。',en:'Work left to right: −3 + 7 = 4, then 4 − (−2).'},
+   exp:{zh:'−3 + 7 = 4；4 − (−2) = 4 + 2 = 6。',en:'−3 + 7 = 4, and 4 − (−2) = 4 + 2 = 6.'}},
+
+  {id:'dn-l3-3',theme:'dn',level:3,type:'mc',q:{zh:'潜水艇在海平面下 50 米（记作 −50 米），再下潜 20 米，现在的位置记作？',en:'A submarine is at −50 m and dives 20 m more. Where is it now?'},
+   options:[{zh:'−70 米',en:'−70 m'},{zh:'−30 米',en:'−30 m'},{zh:'30 米',en:'30 m'},{zh:'70 米',en:'70 m'}],ans:0,
+   hint:{zh:'下潜 = 往更负的方向走。',en:'Diving means moving further negative.'},
+   exp:{zh:'−50 − 20 = −70 米，即海平面下 70 米。',en:'−50 − 20 = −70 m, i.e. 70 m below sea level.'}},
+
+  {id:'dn-l3-4',theme:'dn',level:3,type:'mc',q:{zh:'下面哪个判断是正确的？',en:'Which statement is TRUE?'},
+   options:[{zh:'−7 < −5',en:'−7 < −5'},{zh:'−7 > −5',en:'−7 > −5'},{zh:'−7 = 7',en:'−7 = 7'},{zh:'0 < −1',en:'0 < −1'}],ans:0,
+   hint:{zh:'负数比较：离 0 越远越小。',en:'For negatives, the farther from zero, the smaller.'},
+   exp:{zh:'−7 在 −5 的左边，所以 −7 < −5 正确；0 大于任何负数。',en:'−7 is left of −5, so −7 < −5. Zero is greater than every negative.'}},
+
+  /* ===== 代数表达式 Algebraic Expressions ===== */
+  {id:'ae-l1-1',theme:'ae',level:1,type:'mc',q:{zh:'用 n 表示一个数，n + 3 表示什么？',en:'If n is a number, what does n + 3 mean?'},
+   options:[{zh:'这个数加 3',en:'the number plus 3'},{zh:'这个数的 3 倍',en:'3 times the number'},{zh:'3 减去这个数',en:'3 minus the number'},{zh:'这个数除以 3',en:'the number divided by 3'}],ans:0,
+   hint:{zh:'“+”就是加。',en:'The plus sign means "add".'},
+   exp:{zh:'n + 3 表示这个数加 3。',en:'n + 3 means the number plus 3.'}},
+
+  {id:'ae-l1-2',theme:'ae',level:1,type:'mc',q:{zh:'7x 表示什么？',en:'What does 7x mean?'},
+   options:[{zh:'7 + x',en:'7 + x'},{zh:'7 − x',en:'7 − x'},{zh:'7 × x',en:'7 × x'},{zh:'7 ÷ x',en:'7 ÷ x'}],ans:2,
+   hint:{zh:'数字与字母相乘，乘号可以省略。',en:'When a number multiplies a letter, the times sign is left out.'},
+   exp:{zh:'7x = 7 × x。',en:'7x means 7 × x.'}},
+
+  {id:'ae-l1-3',theme:'ae',level:1,type:'num',q:{zh:'如果 n = 5，那么 n + 3 = ?',en:'If n = 5, then n + 3 = ?'},ans:8,
+   hint:{zh:'把 n 换成 5。',en:'Replace n with 5.'},
+   exp:{zh:'5 + 3 = 8。',en:'5 + 3 = 8.'}},
+
+  {id:'ae-l1-4',theme:'ae',level:1,type:'num',q:{zh:'如果 x = 4，那么 2x = ?',en:'If x = 4, then 2x = ?'},ans:8,
+   hint:{zh:'2x = 2 × x。',en:'2x means 2 × x.'},
+   exp:{zh:'2 × 4 = 8。',en:'2 × 4 = 8.'}},
+
+  {id:'ae-l2-1',theme:'ae',level:2,type:'mc',q:{zh:'“这个数的 3 倍再加 5”用代数式表示是？',en:'Which expression means "3 times a number plus 5"?'},
+   options:[{zh:'3n + 5',en:'3n + 5'},{zh:'n + 8',en:'n + 8'},{zh:'5n + 3',en:'5n + 3'},{zh:'3(n + 5)',en:'3(n + 5)'}],ans:0,
+   hint:{zh:'“3 倍”写作 3n，再加 5。',en:'"3 times" is 3n, then plus 5.'},
+   exp:{zh:'3 倍 → 3n，再加 5 → 3n + 5。',en:'3 times → 3n, plus 5 → 3n + 5.'}},
+
+  {id:'ae-l2-2',theme:'ae',level:2,type:'mc',q:{zh:'“比这个数的 2 倍少 4”用代数式表示是？',en:'Which expression means "4 less than twice a number"?'},
+   options:[{zh:'2n − 4',en:'2n − 4'},{zh:'4 − 2n',en:'4 − 2n'},{zh:'2(n − 4)',en:'2(n − 4)'},{zh:'n − 4',en:'n − 4'}],ans:0,
+   hint:{zh:'“2 倍”写作 2n，“少 4”就是减 4。',en:'"Twice" is 2n, "4 less" means minus 4.'},
+   exp:{zh:'2 倍 → 2n，少 4 → 2n − 4。',en:'Twice → 2n, 4 less → 2n − 4.'}},
+
+  {id:'ae-l2-3',theme:'ae',level:2,type:'num',q:{zh:'当 n = 6 时，3n + 5 = ?',en:'If n = 6, evaluate 3n + 5.'},ans:23,
+   hint:{zh:'先把 3n 算成 3 × 6。',en:'First work out 3n as 3 × 6.'},
+   exp:{zh:'3 × 6 + 5 = 18 + 5 = 23。',en:'3 × 6 + 5 = 18 + 5 = 23.'}},
+
+  {id:'ae-l2-4',theme:'ae',level:2,type:'mc',q:{zh:'化简：2x + 3x − x = ?',en:'Simplify: 2x + 3x − x.'},
+   options:[{zh:'4x',en:'4x'},{zh:'5x',en:'5x'},{zh:'6x',en:'6x'},{zh:'x',en:'x'}],ans:0,
+   hint:{zh:'同类项的系数相加：2 + 3 − 1。',en:'Add the coefficients of like terms: 2 + 3 − 1.'},
+   exp:{zh:'2x + 3x − x = (2 + 3 − 1)x = 4x。',en:'2x + 3x − x = (2 + 3 − 1)x = 4x.'}},
+
+  {id:'ae-l3-1',theme:'ae',level:3,type:'mc',q:{zh:'长方形的长是 x + 2，宽是 3，它的周长用代数式表示是？',en:'A rectangle has length x + 2 and width 3. Its perimeter is…'},
+   options:[{zh:'2x + 10',en:'2x + 10'},{zh:'3x + 6',en:'3x + 6'},{zh:'x + 5',en:'x + 5'},{zh:'6x',en:'6x'}],ans:0,
+   hint:{zh:'周长 = (长 + 宽) × 2。',en:'Perimeter = (length + width) × 2.'},
+   exp:{zh:'(x + 2 + 3) × 2 = (x + 5) × 2 = 2x + 10。',en:'(x + 2 + 3) × 2 = (x + 5) × 2 = 2x + 10.'}},
+
+  {id:'ae-l3-2',theme:'ae',level:3,type:'mc',q:{zh:'“一个数的 5 倍减去它的 2 倍，再减去这个数本身”化简后等于？',en:'"5 times a number minus twice the number minus the number itself" simplifies to…'},
+   options:[{zh:'2n',en:'2n'},{zh:'3n',en:'3n'},{zh:'4n',en:'4n'},{zh:'6n',en:'6n'}],ans:0,
+   hint:{zh:'5n − 2n − n，系数相减：5 − 2 − 1。',en:'5n − 2n − n → subtract coefficients: 5 − 2 − 1.'},
+   exp:{zh:'5n − 2n − n = (5 − 2 − 1)n = 2n。',en:'5n − 2n − n = (5 − 2 − 1)n = 2n.'}},
+
+  {id:'ae-l3-3',theme:'ae',level:3,type:'num',q:{zh:'当 n = 3 时，n² + 2 = ?',en:'If n = 3, evaluate n² + 2.'},ans:11,
+   hint:{zh:'n² 表示 n × n。',en:'n² means n × n.'},
+   exp:{zh:'3 × 3 + 2 = 9 + 2 = 11。',en:'3 × 3 + 2 = 9 + 2 = 11.'}},
+
+  {id:'ae-l3-4',theme:'ae',level:3,type:'num',q:{zh:'如果 n + 5 = 12，那么 n = ?',en:'If n + 5 = 12, what is n?'},ans:7,
+   hint:{zh:'两边同时减去 5。',en:'Subtract 5 from both sides.'},
+   exp:{zh:'n = 12 − 5 = 7。',en:'n = 12 − 5 = 7.'}},
+
+  /* ===== 小数与分数 Decimals & Fractions ===== */
+  {id:'df-l1-1',theme:'df',level:1,type:'mc',q:{zh:'0.5 用分数表示是？',en:'0.5 as a fraction is…'},
+   options:[{zh:'1/2',en:'1/2'},{zh:'1/5',en:'1/5'},{zh:'2/5',en:'2/5'},{zh:'3/4',en:'3/4'}],ans:0,
+   hint:{zh:'0.5 就是 5/10，再化简。',en:'0.5 = 5/10, then simplify.'},
+   exp:{zh:'0.5 = 5/10 = 1/2。',en:'0.5 = 5/10 = 1/2.'}},
+
+  {id:'df-l1-2',theme:'df',level:1,type:'mc',q:{zh:'1/4 用小数表示是？',en:'1/4 as a decimal is…'},
+   options:[{zh:'0.25',en:'0.25'},{zh:'0.4',en:'0.4'},{zh:'0.14',en:'0.14'},{zh:'2.5',en:'2.5'}],ans:0,
+   hint:{zh:'1 ÷ 4 = ?',en:'Work out 1 ÷ 4.'},
+   exp:{zh:'1 ÷ 4 = 0.25，所以 1/4 = 0.25。',en:'1 ÷ 4 = 0.25, so 1/4 = 0.25.'}},
+
+  {id:'df-l1-3',theme:'df',level:1,type:'mc',q:{zh:'3/5 和 1/2，哪个更大？',en:'Which is bigger: 3/5 or 1/2?'},
+   options:[{zh:'3/5',en:'3/5'},{zh:'1/2',en:'1/2'},{zh:'一样大',en:'Equal'},{zh:'无法比较',en:'Cannot compare'}],ans:0,
+   hint:{zh:'化成小数比较：3/5 = 0.6，1/2 = 0.5。',en:'Compare as decimals: 3/5 = 0.6, 1/2 = 0.5.'},
+   exp:{zh:'3/5 = 0.6 > 1/2 = 0.5，所以 3/5 更大。',en:'3/5 = 0.6 is greater than 1/2 = 0.5.'}},
+
+  {id:'df-l1-4',theme:'df',level:1,type:'mc',q:{zh:'0.3 用分数表示是？',en:'0.3 as a fraction is…'},
+   options:[{zh:'3/10',en:'3/10'},{zh:'1/3',en:'1/3'},{zh:'10/3',en:'10/3'},{zh:'3/100',en:'3/100'}],ans:0,
+   hint:{zh:'0.3 是 3 个 0.1。',en:'0.3 is 3 lots of 0.1.'},
+   exp:{zh:'0.3 = 3/10。',en:'0.3 = 3/10.'}},
+
+  {id:'df-l2-1',theme:'df',level:2,type:'num',q:{zh:'1/4 + 1/4 = ?（用小数表示答案）',en:'1/4 + 1/4 = ? (answer as a decimal)'},ans:0.5,
+   hint:{zh:'同分母相加：分子相加，分母不变。',en:'Same denominator: add the numerators.'},
+   exp:{zh:'1/4 + 1/4 = 2/4 = 1/2 = 0.5。',en:'1/4 + 1/4 = 2/4 = 1/2 = 0.5.'}},
+
+  {id:'df-l2-2',theme:'df',level:2,type:'num',q:{zh:'0.75 + 0.25 = ?',en:'0.75 + 0.25 = ?'},ans:1,
+   hint:{zh:'对齐小数点再相加。',en:'Line up the decimal points.'},
+   exp:{zh:'0.75 + 0.25 = 1.00 = 1。',en:'0.75 + 0.25 = 1.'}},
+
+  {id:'df-l2-3',theme:'df',level:2,type:'mc',q:{zh:'1/2 + 1/4 = ?',en:'1/2 + 1/4 = ?'},
+   options:[{zh:'3/4',en:'3/4'},{zh:'2/6',en:'2/6'},{zh:'1/8',en:'1/8'},{zh:'1/6',en:'1/6'}],ans:0,
+   hint:{zh:'先通分成同分母：1/2 = 2/4。',en:'Make common denominators: 1/2 = 2/4.'},
+   exp:{zh:'1/2 + 1/4 = 2/4 + 1/4 = 3/4。',en:'1/2 + 1/4 = 2/4 + 1/4 = 3/4.'}},
+
+  {id:'df-l2-4',theme:'df',level:2,type:'mc',q:{zh:'比 0.6 大、比 0.7 小的数是？',en:'Which number is greater than 0.6 but less than 0.7?'},
+   options:[{zh:'0.65',en:'0.65'},{zh:'0.7',en:'0.7'},{zh:'0.5',en:'0.5'},{zh:'0.07',en:'0.07'}],ans:0,
+   hint:{zh:'在 0.60 和 0.70 之间找。',en:'Find a number between 0.60 and 0.70.'},
+   exp:{zh:'0.6 < 0.65 < 0.7；0.7 等于 0.7，0.5 和 0.07 都小于 0.6。',en:'0.6 < 0.65 < 0.7. The others are outside the range.'}},
+
+  {id:'df-l3-1',theme:'df',level:3,type:'num',q:{zh:'一本书有 80 页，小明读了全书的 3/5，读了多少页？',en:'A book has 80 pages. Ming read 3/5 of it. How many pages did he read?'},ans:48,
+   hint:{zh:'80 × 3/5 = ?',en:'80 × 3/5 = ?'},
+   exp:{zh:'80 ÷ 5 = 16，16 × 3 = 48 页。',en:'80 ÷ 5 = 16, then 16 × 3 = 48 pages.'}},
+
+  {id:'df-l3-2',theme:'df',level:3,type:'num',q:{zh:'买铅笔花了 5.5 元，买橡皮花了 3.25 元，一共花了多少元？',en:'A pencil costs ¥5.5 and an eraser costs ¥3.25. How much in total?'},ans:8.75,
+   hint:{zh:'5.5 + 3.25 = ?',en:'5.5 + 3.25 = ?'},
+   exp:{zh:'5.50 + 3.25 = 8.75 元。',en:'5.50 + 3.25 = ¥8.75.'}},
+
+  {id:'df-l3-3',theme:'df',level:3,type:'mc',q:{zh:'一根绳子长 1/2 米，另一根长 0.25 米，两根一共多长？',en:'One rope is 1/2 m long and another is 0.25 m. How long are they together?'},
+   options:[{zh:'0.75 米',en:'0.75 m'},{zh:'0.5 米',en:'0.5 m'},{zh:'0.25 米',en:'0.25 m'},{zh:'1.25 米',en:'1.25 m'}],ans:0,
+   hint:{zh:'1/2 = 0.5，0.5 + 0.25 = ?',en:'1/2 = 0.5, then 0.5 + 0.25 = ?'},
+   exp:{zh:'1/2 米 = 0.5 米，0.5 + 0.25 = 0.75 米。',en:'1/2 m = 0.5 m, so 0.5 + 0.25 = 0.75 m.'}},
+
+  {id:'df-l3-4',theme:'df',level:3,type:'num',q:{zh:'一瓶水 1.5 升，喝了 0.75 升，还剩多少升？',en:'A bottle holds 1.5 L. You drink 0.75 L. How much is left?'},ans:0.75,
+   hint:{zh:'1.5 − 0.75 = ?',en:'1.5 − 0.75 = ?'},
+   exp:{zh:'1.50 − 0.75 = 0.75 升。',en:'1.50 − 0.75 = 0.75 L.'}},
+
+  /* ===== 统计 Statistics ===== */
+  {id:'st-l1-1',theme:'st',level:1,type:'num',q:{zh:'5、7、9 的平均数是多少？',en:'What is the mean of 5, 7 and 9?'},ans:7,
+   hint:{zh:'先求和，再除以个数。',en:'Add them up, then divide by how many there are.'},
+   exp:{zh:'(5 + 7 + 9) ÷ 3 = 21 ÷ 3 = 7。',en:'(5 + 7 + 9) ÷ 3 = 21 ÷ 3 = 7.'}},
+
+  {id:'st-l1-2',theme:'st',level:1,type:'mc',q:{zh:'小明 4 次数学成绩：85、90、85、100，平均分是多少？',en:'Ming\'s four maths scores: 85, 90, 85, 100. What is his mean score?'},
+   options:[{zh:'90 分',en:'90'},{zh:'92.5 分',en:'92.5'},{zh:'85 分',en:'85'},{zh:'87.5 分',en:'87.5'}],ans:0,
+   hint:{zh:'(85 + 90 + 85 + 100) ÷ 4 = ?',en:'(85 + 90 + 85 + 100) ÷ 4 = ?'},
+   exp:{zh:'(85 + 90 + 85 + 100) ÷ 4 = 360 ÷ 4 = 90。',en:'(85 + 90 + 85 + 100) ÷ 4 = 360 ÷ 4 = 90.'}},
+
+  {id:'st-l1-3',theme:'st',level:1,type:'mc',q:{zh:'条形图显示：喜欢苹果的 12 人、香蕉 8 人、橙子 6 人。最受欢迎的水果是？',en:'A bar chart shows: apples 12, bananas 8, oranges 6. Which fruit is most popular?'},
+   options:[{zh:'苹果',en:'Apples'},{zh:'香蕉',en:'Bananas'},{zh:'橙子',en:'Oranges'},{zh:'无法判断',en:'Cannot tell'}],ans:0,
+   hint:{zh:'条最高的就是最受欢迎的。',en:'The tallest bar is the most popular.'},
+   exp:{zh:'12 > 8 > 6，苹果人数最多。',en:'12 > 8 > 6, so apples are the most popular.'}},
+
+  {id:'st-l1-4',theme:'st',level:1,type:'num',q:{zh:'2、4、6、8、10 的平均数是多少？',en:'What is the mean of 2, 4, 6, 8 and 10?'},ans:6,
+   hint:{zh:'先求和再除以 5。',en:'Add, then divide by 5.'},
+   exp:{zh:'(2 + 4 + 6 + 8 + 10) ÷ 5 = 30 ÷ 5 = 6。',en:'(2 + 4 + 6 + 8 + 10) ÷ 5 = 30 ÷ 5 = 6.'}},
+
+  {id:'st-l2-1',theme:'st',level:2,type:'num',q:{zh:'数据 3、1、7、5、9 的中位数是多少？',en:'What is the median of 3, 1, 7, 5, 9?'},ans:5,
+   hint:{zh:'先从小到大排序，再取正中间的数。',en:'Sort from smallest to largest, then take the middle one.'},
+   exp:{zh:'排序：1, 3, 5, 7, 9，中间是 5。',en:'Sorted: 1, 3, 5, 7, 9 — the middle value is 5.'}},
+
+  {id:'st-l2-2',theme:'st',level:2,type:'mc',q:{zh:'数据 5、8、8、8、9、10 的众数（出现最多的数）是？',en:'What is the mode of 5, 8, 8, 8, 9, 10?'},
+   options:[{zh:'8',en:'8'},{zh:'9',en:'9'},{zh:'10',en:'10'},{zh:'没有众数',en:'No mode'}],ans:0,
+   hint:{zh:'看哪个数出现次数最多。',en:'Which number appears most often?'},
+   exp:{zh:'8 出现了 3 次，最多，所以众数是 8。',en:'8 appears 3 times, so the mode is 8.'}},
+
+  {id:'st-l2-3',theme:'st',level:2,type:'num',q:{zh:'数据 2、3、5、7、8 的平均数是多少？',en:'What is the mean of 2, 3, 5, 7, 8?'},ans:5,
+   hint:{zh:'(2 + 3 + 5 + 7 + 8) ÷ 5 = ?',en:'(2 + 3 + 5 + 7 + 8) ÷ 5 = ?'},
+   exp:{zh:'25 ÷ 5 = 5。',en:'25 ÷ 5 = 5.'}},
+
+  {id:'st-l2-4',theme:'st',level:2,type:'mc',q:{zh:'6 名同学身高（厘米）：120、130、125、130、135、140，中位数是多少？',en:'Six heights (cm): 120, 130, 125, 130, 135, 140. What is the median?'},
+   options:[{zh:'130',en:'130'},{zh:'125',en:'125'},{zh:'132.5',en:'132.5'},{zh:'135',en:'135'}],ans:0,
+   hint:{zh:'偶数个数据，取中间两个的平均。',en:'Even count: average the two middle values.'},
+   exp:{zh:'排序：120, 125, 130, 130, 135, 140；中间两个是 130 和 130，平均为 130。',en:'Sorted: 120, 125, 130, 130, 135, 140 — the middle pair averages to 130.'}},
+
+  {id:'st-l3-1',theme:'st',level:3,type:'num',q:{zh:'班级 4 个小组人数：12、14、11、13，平均每组多少人？',en:'Four groups have 12, 14, 11 and 13 students. What is the mean group size?'},ans:12.5,
+   hint:{zh:'(12 + 14 + 11 + 13) ÷ 4 = ?',en:'(12 + 14 + 11 + 13) ÷ 4 = ?'},
+   exp:{zh:'50 ÷ 4 = 12.5 人。',en:'50 ÷ 4 = 12.5 students.'}},
+
+  {id:'st-l3-2',theme:'st',level:3,type:'mc',q:{zh:'A 班平均分 85 分，B 班平均分 90 分。下面说法正确的是？',en:'Class A\'s mean score is 85 and Class B\'s is 90. Which statement is TRUE?'},
+   options:[{zh:'B 班整体水平更高',en:'Class B is stronger overall'},{zh:'A 班每个学生都比 B 班差',en:'Every student in A is weaker'},{zh:'两班水平一样',en:'The classes are equal'},{zh:'无法比较平均分',en:'Means cannot be compared'}],ans:0,
+   hint:{zh:'平均分反映整体的平均水平。',en:'The mean reflects the overall level.'},
+   exp:{zh:'90 > 85，B 班平均分更高；但不能说每个学生都更好。',en:'90 > 85, so Class B has a higher mean; we cannot judge individual students.'}},
+
+  {id:'st-l3-3',theme:'st',level:3,type:'num',q:{zh:'5 个数的平均数是 8，这 5 个数的总和是多少？',en:'Five numbers have a mean of 8. What is their total?'},ans:40,
+   hint:{zh:'平均数 × 个数 = 总和。',en:'Mean × count = total.'},
+   exp:{zh:'8 × 5 = 40。',en:'8 × 5 = 40.'}},
+
+  {id:'st-l3-4',theme:'st',level:3,type:'mc',q:{zh:'数据 6、7、7、8、12，下面哪个说法正确？',en:'For the data 6, 7, 7, 8, 12, which is correct?'},
+   options:[{zh:'平均数 8，中位数 7',en:'Mean 8, median 7'},{zh:'平均数 7，中位数 8',en:'Mean 7, median 8'},{zh:'平均数和中位数都是 7',en:'Both are 7'},{zh:'平均数和中位数都是 8',en:'Both are 8'}],ans:0,
+   hint:{zh:'平均数 = 总和 ÷ 5；中位数先排序。',en:'Mean = total ÷ 5; sort first for the median.'},
+   exp:{zh:'平均 = (6+7+7+8+12) ÷ 5 = 8；排序 6,7,7,8,12，中位数 = 7。',en:'Mean = 40 ÷ 5 = 8; median = 7.'}},
+
+  /* ===== 角与多边形 Angles & Polygons ===== */
+  {id:'ap-l1-1',theme:'ap',level:1,type:'mc',q:{zh:'等于 90° 的角叫做？',en:'An angle of exactly 90° is called…'},
+   options:[{zh:'直角',en:'a right angle'},{zh:'锐角',en:'an acute angle'},{zh:'钝角',en:'an obtuse angle'},{zh:'平角',en:'a straight angle'}],ans:0,
+   hint:{zh:'90° 像一个正方形的角。',en:'90° looks like the corner of a square.'},
+   exp:{zh:'等于 90° 的角叫直角。',en:'An angle of exactly 90° is a right angle.'}},
+
+  {id:'ap-l1-2',theme:'ap',level:1,type:'mc',q:{zh:'大于 90° 且小于 180° 的角叫做？',en:'An angle between 90° and 180° is called…'},
+   options:[{zh:'钝角',en:'an obtuse angle'},{zh:'锐角',en:'an acute angle'},{zh:'直角',en:'a right angle'},{zh:'周角',en:'a full turn'}],ans:0,
+   hint:{zh:'“钝”表示不那么锋利。',en:'"Obtuse" means not sharp.'},
+   exp:{zh:'大于 90° 小于 180° 的角是钝角。',en:'Between 90° and 180° is an obtuse angle.'}},
+
+  {id:'ap-l1-3',theme:'ap',level:1,type:'num',q:{zh:'三角形三个内角的和是多少度？',en:'What is the sum of the three angles of a triangle?'},ans:180,
+   hint:{zh:'任何三角形都一样。',en:'The same for every triangle.'},
+   exp:{zh:'三角形内角和 = 180°。',en:'The angles of a triangle always add up to 180°.'}},
+
+  {id:'ap-l1-4',theme:'ap',level:1,type:'num',q:{zh:'钟面上 3 点整，时针和分针的夹角是多少度？',en:'At 3 o\'clock, what angle do the clock hands make?'},ans:90,
+   hint:{zh:'3 点到 12 点之间是几个大格？每格 30°。',en:'How many big marks between 3 and 12? Each is 30°.'},
+   exp:{zh:'3 大格 × 30° = 90°，是直角。',en:'3 × 30° = 90° — a right angle.'}},
+
+  {id:'ap-l2-1',theme:'ap',level:2,type:'num',q:{zh:'三角形两个角分别是 40° 和 60°，第三个角是多少度？',en:'Two angles of a triangle are 40° and 60°. What is the third angle?'},ans:80,
+   hint:{zh:'180 − 40 − 60 = ?',en:'180 − 40 − 60 = ?'},
+   exp:{zh:'180 − 40 − 60 = 80°。',en:'180 − 40 − 60 = 80°.'}},
+
+  {id:'ap-l2-2',theme:'ap',level:2,type:'num',q:{zh:'等腰三角形的顶角是 80°，一个底角是多少度？',en:'An isosceles triangle has a vertex angle of 80°. What is one base angle?'},ans:50,
+   hint:{zh:'两底角相等：(180 − 80) ÷ 2 = ?',en:'Base angles are equal: (180 − 80) ÷ 2 = ?'},
+   exp:{zh:'(180 − 80) ÷ 2 = 100 ÷ 2 = 50°。',en:'(180 − 80) ÷ 2 = 100 ÷ 2 = 50°.'}},
+
+  {id:'ap-l2-3',theme:'ap',level:2,type:'num',q:{zh:'四边形内角和是多少度？',en:'What is the sum of the angles of a quadrilateral?'},ans:360,
+   hint:{zh:'四边形可分成 2 个三角形。',en:'A quadrilateral can be split into 2 triangles.'},
+   exp:{zh:'2 × 180° = 360°。',en:'2 × 180° = 360°.'}},
+
+  {id:'ap-l2-4',theme:'ap',level:2,type:'mc',q:{zh:'五边形的内角和是多少度？',en:'What is the sum of the angles of a pentagon?'},
+   options:[{zh:'540°',en:'540°'},{zh:'360°',en:'360°'},{zh:'720°',en:'720°'},{zh:'180°',en:'180°'}],ans:0,
+   hint:{zh:'内角和 = (边数 − 2) × 180°。',en:'Sum = (sides − 2) × 180°.'},
+   exp:{zh:'(5 − 2) × 180° = 3 × 180° = 540°。',en:'(5 − 2) × 180° = 3 × 180° = 540°.'}},
+
+  {id:'ap-l3-1',theme:'ap',level:3,type:'num',q:{zh:'一个多边形的内角和是 720°，它是几边形？',en:'A polygon has an angle sum of 720°. How many sides does it have?'},ans:6,
+   hint:{zh:'(n − 2) × 180° = 720°，求 n。',en:'(n − 2) × 180° = 720°, solve for n.'},
+   exp:{zh:'720 ÷ 180 = 4，n − 2 = 4，n = 6，是六边形。',en:'720 ÷ 180 = 4, so n = 6 — a hexagon.'}},
+
+  {id:'ap-l3-2',theme:'ap',level:3,type:'num',q:{zh:'直角三角形的一个锐角是 35°，另一个锐角是多少度？',en:'A right triangle has one acute angle of 35°. What is the other acute angle?'},ans:55,
+   hint:{zh:'180 − 90 − 35 = ?',en:'180 − 90 − 35 = ?'},
+   exp:{zh:'180 − 90 − 35 = 55°。',en:'180 − 90 − 35 = 55°.'}},
+
+  {id:'ap-l3-3',theme:'ap',level:3,type:'num',q:{zh:'钟面上 6 点整，时针和分针的夹角是多少度？',en:'At 6 o\'clock, what angle do the clock hands make?'},ans:180,
+   hint:{zh:'6 点到 12 点是 6 个大格。',en:'Six big marks between 6 and 12.'},
+   exp:{zh:'6 × 30° = 180°，是平角。',en:'6 × 30° = 180° — a straight angle.'}},
+
+  {id:'ap-l3-4',theme:'ap',level:3,type:'mc',q:{zh:'下面哪个角是平角？',en:'Which of these is a straight angle?'},
+   options:[{zh:'180°',en:'180°'},{zh:'90°',en:'90°'},{zh:'360°',en:'360°'},{zh:'45°',en:'45°'}],ans:0,
+   hint:{zh:'平角像一条直线。',en:'A straight angle looks like a line.'},
+   exp:{zh:'平角 = 180°，正好是一条直线。',en:'A straight angle is 180° — it looks like a straight line.'}},
+
+  /* ===== 比 Ratio ===== */
+  {id:'ra-l1-1',theme:'ra',level:1,type:'mc',q:{zh:'6 : 9 化简后是？',en:'6 : 9 simplified is…'},
+   options:[{zh:'2 : 3',en:'2 : 3'},{zh:'3 : 2',en:'3 : 2'},{zh:'6 : 9',en:'6 : 9'},{zh:'1 : 3',en:'1 : 3'}],ans:0,
+   hint:{zh:'前后项同时除以它们的最大公因数 3。',en:'Divide both parts by their HCF, 3.'},
+   exp:{zh:'6 ÷ 3 = 2，9 ÷ 3 = 3，所以 6 : 9 = 2 : 3。',en:'6 ÷ 3 = 2 and 9 ÷ 3 = 3, so 6 : 9 = 2 : 3.'}},
+
+  {id:'ra-l1-2',theme:'ra',level:1,type:'num',q:{zh:'求比值：12 : 4 = ?',en:'Find the ratio value: 12 : 4 = ?'},ans:3,
+   hint:{zh:'比值 = 前项 ÷ 后项。',en:'Ratio value = first ÷ second.'},
+   exp:{zh:'12 ÷ 4 = 3。',en:'12 ÷ 4 = 3.'}},
+
+  {id:'ra-l1-3',theme:'ra',level:1,type:'mc',q:{zh:'在比 3 : 7 中，前项是几？',en:'In the ratio 3 : 7, what is the first term?'},
+   options:[{zh:'3',en:'3'},{zh:'7',en:'7'},{zh:'10',en:'10'},{zh:'21',en:'21'}],ans:0,
+   hint:{zh:'冒号前面的数叫前项。',en:'The number before the colon is the first term.'},
+   exp:{zh:'3 : 7 中，3 在前，是前项。',en:'In 3 : 7, the 3 comes first.'}},
+
+  {id:'ra-l1-4',theme:'ra',level:1,type:'mc',q:{zh:'把 10 : 15 化为最简整数比。',en:'Simplify 10 : 15 to its simplest form.'},
+   options:[{zh:'2 : 3',en:'2 : 3'},{zh:'3 : 2',en:'3 : 2'},{zh:'5 : 5',en:'5 : 5'},{zh:'10 : 15',en:'10 : 15'}],ans:0,
+   hint:{zh:'同时除以最大公因数 5。',en:'Divide both by their HCF, 5.'},
+   exp:{zh:'10 ÷ 5 = 2，15 ÷ 5 = 3，所以 10 : 15 = 2 : 3。',en:'10 ÷ 5 = 2 and 15 ÷ 5 = 3, so 10 : 15 = 2 : 3.'}},
+
+  {id:'ra-l2-1',theme:'ra',level:2,type:'num',q:{zh:'按 2 : 3 把 20 个苹果分给甲、乙两人，乙分得多少个？',en:'20 apples are shared between A and B in the ratio 2 : 3. How many does B get?'},ans:12,
+   hint:{zh:'先算一份：20 ÷ (2 + 3)。',en:'One share = 20 ÷ (2 + 3).'},
+   exp:{zh:'20 ÷ 5 = 4，乙得 3 × 4 = 12 个。',en:'20 ÷ 5 = 4, so B gets 3 × 4 = 12.'}},
+
+  {id:'ra-l2-2',theme:'ra',level:2,type:'num',q:{zh:'按 1 : 4 兑果汁，果汁 100 毫升，需要水多少毫升？',en:'Juice is mixed 1 : 4 with water. For 100 mL of juice, how much water is needed?'},ans:400,
+   hint:{zh:'水是果汁的 4 倍。',en:'Water is 4 times the juice.'},
+   exp:{zh:'100 × 4 = 400 毫升。',en:'100 × 4 = 400 mL.'}},
+
+  {id:'ra-l2-3',theme:'ra',level:2,type:'mc',q:{zh:'3 : 4 = ? : 8，括号里应填？',en:'3 : 4 = ? : 8. What goes in the box?'},
+   options:[{zh:'6',en:'6'},{zh:'4',en:'4'},{zh:'8',en:'8'},{zh:'3',en:'3'}],ans:0,
+   hint:{zh:'后项 4 变成 8 是乘 2，前项也要乘 2。',en:'The second term doubled, so double the first.'},
+   exp:{zh:'4 → 8 是 ×2，3 × 2 = 6。',en:'4 → 8 means ×2, so 3 × 2 = 6.'}},
+
+  {id:'ra-l2-4',theme:'ra',level:2,type:'mc',q:{zh:'男生 18 人、女生 24 人，男女生人数的最简比是？',en:'There are 18 boys and 24 girls. What is the boys : girls ratio in simplest form?'},
+   options:[{zh:'3 : 4',en:'3 : 4'},{zh:'4 : 3',en:'4 : 3'},{zh:'18 : 24',en:'18 : 24'},{zh:'6 : 8',en:'6 : 8'}],ans:0,
+   hint:{zh:'18 和 24 同时除以最大公因数 6。',en:'Divide 18 and 24 by their HCF, 6.'},
+   exp:{zh:'18 : 24 = (18 ÷ 6) : (24 ÷ 6) = 3 : 4。',en:'18 : 24 = 3 : 4 after dividing by 6.'}},
+
+  {id:'ra-l3-1',theme:'ra',level:3,type:'num',q:{zh:'地图比例尺 1 : 1000，图上 3 厘米代表实际多少米？',en:'A map scale is 1 : 1000. How many metres does 3 cm on the map represent?'},ans:30,
+   hint:{zh:'实际距离 = 图上距离 × 1000（厘米），再换成米。',en:'Real = 3 cm × 1000, then convert to metres.'},
+   exp:{zh:'3 × 1000 = 3000 厘米 = 30 米。',en:'3 × 1000 = 3000 cm = 30 m.'}},
+
+  {id:'ra-l3-2',theme:'ra',level:3,type:'num',q:{zh:'按 1 : 2 : 3 把 60 颗糖分给三人，分得最多的人有多少颗？',en:'60 sweets are shared among three people in the ratio 1 : 2 : 3. How many does the person with the most get?'},ans:30,
+   hint:{zh:'一份 = 60 ÷ (1 + 2 + 3)。',en:'One share = 60 ÷ (1 + 2 + 3).'},
+   exp:{zh:'60 ÷ 6 = 10，最多的人得 3 × 10 = 30 颗。',en:'60 ÷ 6 = 10, so the largest share is 3 × 10 = 30.'}},
+
+  {id:'ra-l3-3',theme:'ra',level:3,type:'mc',q:{zh:'长方形长与宽的比是 5 : 2，宽是 6 厘米，长是多少厘米？',en:'A rectangle\'s length : width is 5 : 2. The width is 6 cm. How long is it?'},
+   options:[{zh:'15 厘米',en:'15 cm'},{zh:'10 厘米',en:'10 cm'},{zh:'12 厘米',en:'12 cm'},{zh:'30 厘米',en:'30 cm'}],ans:0,
+   hint:{zh:'一份 = 6 ÷ 2 = 3 厘米，长是 5 份。',en:'One share = 6 ÷ 2 = 3 cm, length is 5 shares.'},
+   exp:{zh:'6 ÷ 2 = 3，长 = 5 × 3 = 15 厘米。',en:'6 ÷ 2 = 3, so length = 5 × 3 = 15 cm.'}},
+
+  {id:'ra-l3-4',theme:'ra',level:3,type:'num',q:{zh:'两个数的比是 3 : 4，它们的和是 28，较小的数是多少？',en:'Two numbers are in the ratio 3 : 4 and their sum is 28. What is the smaller number?'},ans:12,
+   hint:{zh:'一份 = 28 ÷ (3 + 4)，较小数占 3 份。',en:'One share = 28 ÷ (3 + 4); the smaller has 3 shares.'},
+   exp:{zh:'28 ÷ 7 = 4，较小数 = 3 × 4 = 12。',en:'28 ÷ 7 = 4, so the smaller is 3 × 4 = 12.'}}
+];
+window.__BANK = BUILTIN;
+
+var THEMES = {
+  fm:{icon:'🔢',zh:'因数与倍数',en:'Factors & Multiples',color:'var(--fm)',
+      vocab:[['因数','factor'],['倍数','multiple'],['质数','prime'],['合数','composite'],['最大公因数','HCF'],['最小公倍数','LCM']]},
+  dn:{icon:'🌡️',zh:'正负数',en:'Directed Numbers',color:'var(--dn)',
+      vocab:[['正数','positive'],['负数','negative'],['数轴','number line'],['零下','below zero'],['相反数','opposite']]},
+  ae:{icon:'📐',zh:'代数表达式',en:'Algebraic Expressions',color:'var(--ae)',
+      vocab:[['未知数','variable'],['表达式','expression'],['代入','substitute'],['同类项','like terms'],['化简','simplify']]},
+  df:{icon:'🍕',zh:'小数与分数',en:'Decimals & Fractions',color:'var(--ok)',
+      vocab:[['小数','decimal'],['分数','fraction'],['通分','common denominator'],['最简分数','simplest form'],['分子','numerator']]},
+  st:{icon:'📊',zh:'统计',en:'Statistics',color:'#00b8d4',
+      vocab:[['平均数','mean'],['中位数','median'],['众数','mode'],['条形图','bar chart'],['数据','data']]},
+  ap:{icon:'🔺',zh:'角与多边形',en:'Angles & Polygons',color:'#ff6b81',
+      vocab:[['锐角','acute'],['直角','right angle'],['钝角','obtuse'],['内角和','angle sum'],['多边形','polygon']]},
+  ra:{icon:'⚖️',zh:'比',en:'Ratio',color:'#7d8df2',
+      vocab:[['比','ratio'],['前项','first term'],['后项','second term'],['化简','simplify'],['比例尺','scale']]}
+};
+var LEVELS = [
+  {zh:'热身',en:'Warm-up'},
+  {zh:'挑战',en:'Challenge'},
+  {zh:'高手',en:'Master'}
+];
+
+/* ---------- 徽章 ---------- */
+var BADGES = [
+  {id:'b1',ic:'🌟',zh:'初来乍到',en:'First Steps',desc:{zh:'答对第 1 题',en:'Get the first question right'},cond:function(s){return s.stars>0;}},
+  {id:'b2',ic:'🔢',zh:'因数侦探',en:'Factor Detective',desc:{zh:'因数与倍数 · 热身关 ≥ 8 星',en:'Factors theme, Level 1 ≥ 8 stars'},cond:function(s){return (s.levelStars['fm-1']||0)>=8;}},
+  {id:'b3',ic:'🧊',zh:'正负战士',en:'Negative Hero',desc:{zh:'正负数 · 挑战关 ≥ 8 星',en:'Directed Numbers, Level 2 ≥ 8 stars'},cond:function(s){return (s.levelStars['dn-2']||0)>=8;}},
+  {id:'b4',ic:'🧙',zh:'代数魔法师',en:'Algebra Wizard',desc:{zh:'代数表达式 · 高手关 ≥ 8 星',en:'Algebraic Expressions, Level 3 ≥ 8 stars'},cond:function(s){return (s.levelStars['ae-3']||0)>=8;}},
+  {id:'b5',ic:'👑',zh:'全星勇士',en:'Star Champion',desc:{zh:'全部 21 关都拿满分',en:'Full stars on all 21 levels'},cond:function(s){var ok=true;Object.keys(THEMES).forEach(function(t){[1,2,3].forEach(function(l){if((s.levelStars[t+'-'+l]||0)<12)ok=false;});});return ok;}},
+  {id:'b6',ic:'🔥',zh:'七日连胜',en:'7-Day Streak',desc:{zh:'连续 7 天都有学习',en:'Practise 7 days in a row'},cond:function(s){return streakCount()>=7;}},
+  {id:'b7',ic:'📗',zh:'错题征服者',en:'Error Conqueror',desc:{zh:'重做对 5 道错题',en:'Fix 5 wrong questions'},cond:function(s){return s.wrongFixed>=5;}},
+  {id:'b8',ic:'🧒',zh:'出题小老师',en:'Little Teacher',desc:{zh:'答对 3 道家长出的题',en:'Answer 3 parent-made questions right'},cond:function(s){return s.customCorrect>=3;}},
+  {id:'b9',ic:'💰',zh:'星星富翁',en:'Star Tycoon',desc:{zh:'累计获得 200 颗星',en:'Earn 200 stars in total'},cond:function(s){return s.stars>=200;}}
+];
+
+/* ---------- 状态 ---------- */
+var STORE_KEY = 'mathPlanet_v1';
+function defaultState(){
+  return {
+    childName:'小朋友', lang:'zh', showEn:true, sound:true, pin:'2468',
+    stars:0, levelStars:{}, qStat:{}, streakDates:[], badges:[],
+    rewards:[
+      {id:'r1',zh:'看动画片 20 分钟',en:'20 min cartoon',cost:30},
+      {id:'r2',zh:'周末去公园玩',en:'Park trip this weekend',cost:50},
+      {id:'r3',zh:'选今晚吃什么',en:'Choose tonight\'s dinner',cost:20},
+      {id:'r4',zh:'买一本喜欢的书',en:'Buy a book you like',cost:80}
+    ],
+    redeemed:[], customQs:[], wrongBook:[], wrongFixed:0, customCorrect:0,
+    sync:{enabled:false, provider:'', room:'', server:'', lastSync:0, updatedAt:0}
+  };
+}
+var state;
+function loadState(){
+  try{
+    var raw=localStorage.getItem(STORE_KEY);
+    if(!raw) { state=defaultState(); return; }
+    var o=JSON.parse(raw), d=defaultState();
+    for(var k in d){ state[k] = (o[k]===undefined) ? d[k] : o[k]; }
+  }catch(e){ state=defaultState(); }
+}
+function saveState(){ try{ localStorage.setItem(STORE_KEY, JSON.stringify(state)); }catch(e){} }
+
+/* ---------- 会话 ---------- */
+var VIEW = 'home';
+var QUIZ = null; /* {list:[{q,order}], idx, stars, max, mode, theme, level} */
+
+function getQuestions(theme, level){
+  var list = BUILTIN.filter(function(q){ return q.theme===theme && q.level===level; })
+    .concat(state.customQs.filter(function(q){ return q.theme===theme && q.level===level; }));
+  return list;
+}
+function shuffle(arr){
+  var a=arr.slice();
+  for(var i=a.length-1;i>0;i--){ var j=Math.floor(Math.random()*(i+1)); var t=a[i]; a[i]=a[j]; a[j]=t; }
+  return a;
+}
+function levelKey(theme,level){ return theme+'-'+level; }
+function levelUnlocked(theme,level){
+  if(level===1) return true;
+  return (state.levelStars[levelKey(theme, level-1)]||0) >= 1;
+}
+function themeStars(theme){
+  var s=0;
+  [1,2,3].forEach(function(l){ s+=(state.levelStars[levelKey(theme,l)]||0); });
+  return s;
+}
+
+/* ---------- 星星 / 连胜 / 徽章 ---------- */
+function addStars(n){
+  state.stars += n;
+  saveState();
+  sndStar();
+}
+function addToday(){
+  var t=todayStr();
+  if(state.streakDates.indexOf(t)===-1){ state.streakDates.push(t); saveState(); }
+}
+function streakCount(){
+  var dates=state.streakDates.slice().sort();
+  if(!dates.length) return 0;
+  var today=todayStr();
+  var idx=dates.indexOf(today);
+  if(idx===-1){
+    var y=new Date(Date.now()-86400000);
+    var ystr=y.getFullYear()+'-'+('0'+(y.getMonth()+1)).slice(-2)+'-'+('0'+y.getDate()).slice(-2);
+    idx=dates.indexOf(ystr);
+    if(idx===-1) return 0;
+  }
+  var cnt=1;
+  for(var i=idx;i>0;i--){
+    var a=new Date(dates[i-1]), b=new Date(dates[i]);
+    if((b-a)/86400000===1) cnt++; else break;
+  }
+  return cnt;
+}
+function checkBadges(){
+  var newly=[];
+  BADGES.forEach(function(b){
+    if(state.badges.indexOf(b.id)===-1 && b.cond(state)){
+      state.badges.push(b.id); newly.push(b);
+    }
+  });
+  if(newly.length){ saveState(); newly.forEach(function(b){ setTimeout(function(){ toast('🏅 获得徽章：' + (state.lang==='en'?b.en:b.zh)); },400); }); }
+}
+
+/* ---------- 渲染入口 ---------- */
+function go(view, p){
+  VIEW=view;
+  render();
+}
+function render(){
+  var app=$('app');
+  if(VIEW==='home') app.innerHTML = rHome();
+  else if(VIEW==='theme') app.innerHTML = rTheme();
+  else if(VIEW==='quiz') app.innerHTML = rQuiz();
+  else if(VIEW==='result') app.innerHTML = rResult();
+  else if(VIEW==='badges') app.innerHTML = rBadges();
+  else if(VIEW==='wrong') app.innerHTML = rWrong();
+  else if(VIEW==='rewards') app.innerHTML = rRewards();
+  else if(VIEW==='parent') app.innerHTML = rParent();
+}
+
+/* ---------- 首页 ---------- */
+function rHome(){
+  var h='';
+  h += '<div class="topbar"><div><div class="t">🚀 数学星球</div><div class="sub">Math Planet · Grade 6</div></div>' +
+       '<div>'+(syncEnabled()?'<button class="iconbtn" onclick="go(\'parent\')" title="云端同步中">☁️</button>':'')+
+       '<button class="iconbtn" onclick="toggleSound()">'+(state.sound?'🔊':'🔇')+'</button></div></div>';
+  h += '<div class="card"><div class="hud">' +
+       '<div><div class="v">'+esc(state.childName)+'</div><div class="k">'+bi('小朋友','Player')+'</div></div>' +
+       '<div><div class="v">⭐ '+state.stars+'</div><div class="k">'+bi('星星','Stars')+'</div></div>' +
+       '<div><div class="v">🔥 '+streakCount()+'</div><div class="k">'+bi('连续天数','Streak')+'</div></div>' +
+       '</div></div>';
+  Object.keys(THEMES).forEach(function(t){
+    var th=THEMES[t];
+    var ts=themeStars(t);
+    var pct=Math.min(100, Math.round(ts/36*100));
+    h += '<div class="card themeCard" onclick="openTheme(\''+t+'\')" style="cursor:pointer">' +
+         '<div class="ic floaty">'+th.icon+'</div>' +
+         '<div style="flex:1"><div class="nm">'+bi(th.zh,th.en)+'</div>' +
+         '<div class="pv">⭐ '+ts+' / 36</div>' +
+         '<div class="bar"><i style="width:'+pct+'%; background:'+th.color+'"></i></div></div></div>';
+  });
+  h += '<div class="grid3">' +
+       '<div class="mini" onclick="go(\'badges\')"><div class="ic">🏅</div><div class="nm">'+bi('徽章','Badges')+'</div></div>' +
+       '<div class="mini" onclick="go(\'wrong\')"><div class="ic">📗</div><div class="nm">'+bi('错题本','Wrong Book')+'</div></div>' +
+       '<div class="mini" onclick="go(\'rewards\')"><div class="ic">🎁</div><div class="nm">'+bi('兑换奖励','Rewards')+'</div></div>' +
+       '</div>';
+  h += '<div style="text-align:center; margin-top:16px"><button class="backlink" onclick="go(\'parent\')">🔒 '+bi('家长模式','Parent Mode')+'</button></div>';
+  return h;
+}
+function toggleSound(){ state.sound=!state.sound; saveState(); render(); }
+
+/* ---------- 主题页 ---------- */
+var curTheme='fm';
+function rTheme(){
+  var th=THEMES[curTheme];
+  var h='<div class="topbar"><button class="backlink" onclick="go(\'home\')">← '+bi('返回','Back')+'</button><div></div></div>';
+  h += '<div class="card"><div class="t" style="font-size:22px; font-weight:800">'+th.icon+' '+bi(th.zh,th.en)+'</div>' +
+       '<div class="subtitle" style="margin-top:4px">'+bi('先认识一下关键词吧','Learn the key words first')+'</div>';
+  th.vocab.forEach(function(v){
+    h += '<span class="chip">'+esc(v[0])+' <b>'+esc(v[1])+'</b></span>';
+  });
+  h += '</div>';
+  for(var l=1;l<=3;l++){
+    var key=levelKey(curTheme,l);
+    var st=state.levelStars[key]||0;
+    var unlocked=levelUnlocked(curTheme,l);
+    h += '<div class="card lvlRow'+(unlocked?'':' locked')+'" onclick="'+(unlocked?"startQuiz('"+curTheme+"',"+l+")":'')+'" style="cursor:'+(unlocked?'pointer':'not-allowed')+'">' +
+         '<div><div class="nm">'+LEVELS[l-1].zh+' <span class="en">'+LEVELS[l-1].en+'</span></div>' +
+         '<div class="st">'+(unlocked ? ('⭐ '+st+' / 12') : '🔒 '+bi('先完成上一关','Finish the level above'))+'</div></div>' +
+         '<div style="font-size:26px">'+(unlocked?'🚀':'🔒')+'</div></div>';
+  }
+  return h;
+}
+function openTheme(t){ curTheme=t; go('theme'); }
+
+/* ---------- 闯关 ---------- */
+function startQuiz(theme, level){
+  var list=getQuestions(theme,level);
+  if(!list.length){ toast(bi('这一关还没有题目','No questions yet')); return; }
+  QUIZ={ list:list.map(function(q){ return {q:q, order: (q.type==='mc'? shuffle(q.options.map(function(o,i){return {i:i,opt:o};})):null)}; }),
+         idx:0, stars:0, max:list.length*3, mode:'level', theme:theme, level:level, input:'', phase:'answer', hintUsed:false, attempts:0, answered:false };
+  go('quiz');
+}
+function startPractice(){
+  if(!state.wrongBook.length){ toast(bi('错题本空空的，太棒了！','No wrong questions — awesome!')); go('wrong'); return; }
+  var list=state.wrongBook.map(function(id){
+    var q=null;
+    BUILTIN.forEach(function(b){ if(b.id===id) q=b; });
+    state.customQs.forEach(function(b){ if(b.id===id) q=b; });
+    return q;
+  }).filter(Boolean);
+  QUIZ={ list:list.map(function(q){ return {q:q, order: (q.type==='mc'? shuffle(q.options.map(function(o,i){return {i:i,opt:o};})):null)}; }),
+         idx:0, stars:0, max:list.length*3, mode:'practice', theme:'', level:0, input:'', phase:'answer', hintUsed:false, attempts:0, answered:false };
+  go('quiz');
+}
+function rQuiz(){
+  var item=QUIZ.list[QUIZ.idx], q=item.q;
+  var th=THEMES[q.theme];
+  var h='<div class="topbar"><button class="backlink" onclick="quitQuiz()">← '+bi('退出','Quit')+'</button>' +
+       '<div style="color:#fff; font-weight:700">'+th.icon+' '+bi(th.zh,th.en)+(QUIZ.mode==='practice'?' · '+bi('错题练习','Practice'):'')+'</div>' +
+       '<button class="iconbtn" onclick="toggleSound()">'+(state.sound?'🔊':'🔇')+'</button></div>';
+  h += '<div class="card">';
+  h += '<div class="dots">';
+  for(var i=0;i<QUIZ.list.length;i++){
+    h += '<i class="'+(i<QUIZ.idx?'done':(i===QUIZ.idx?'now':''))+'"></i>';
+  }
+  h += '</div>';
+  h += '<div style="display:flex; justify-content:space-between; align-items:center">' +
+       '<div class="st" style="color:var(--sub); font-size:13px">'+bi('第','Q')+' '+(QUIZ.idx+1)+' / '+QUIZ.list.length+'</div>' +
+       '<div class="st" style="color:var(--warn); font-size:15px; font-weight:700">⭐ '+QUIZ.stars+'</div>' +
+       '<button class="btn small" onclick="speakQ()">🔊 '+bi('读题','Read')+'</button></div>';
+  h += '<div class="qcard"><div class="qp">'+bi(q.q.zh,q.q.en)+'</div></div>';
+  if(QUIZ.phase==='answer' || QUIZ.phase==='retry'){
+    if(q.type==='mc'){
+      item.order.forEach(function(o){
+        h += '<button class="opt" onclick="mc('+o.i+')">'+bi(o.opt.zh,o.opt.en)+'</button>';
+      });
+    }else{
+      h += '<div class="numdisp" id="numdisp">'+(QUIZ.input===''?'&nbsp;':esc(QUIZ.input))+'</div>';
+      h += '<div class="pad">'+
+           '<button onclick="pad(\'1\')">1</button><button onclick="pad(\'2\')">2</button><button onclick="pad(\'3\')">3</button>'+
+           '<button onclick="pad(\'4\')">4</button><button onclick="pad(\'5\')">5</button><button onclick="pad(\'6\')">6</button>'+
+           '<button onclick="pad(\'7\')">7</button><button onclick="pad(\'8\')">8</button><button onclick="pad(\'9\')">9</button>'+
+           '<button class="op" onclick="pad(\'-\')">−</button><button onclick="pad(\'0\')">0</button><button onclick="pad(\'.\')">.</button>'+
+           '<button onclick="pad(\'del\')">⌫</button><button class="ok" style="grid-column:2/4" onclick="submitNum()">✓ '+bi('确定','OK')+'</button>'+
+           '</div>';
+    }
+    h += '<button class="btn ghost small" onclick="useHint()">💡 '+bi('小提示','Hint')+'</button>';
+  }
+  h += '<div class="hintbox" id="hintbox"></div>';
+  h += '<div class="fb" id="fb"></div>';
+  h += '<div class="expbox" id="expbox"></div>';
+  if(QUIZ.phase==='retry'){
+    h += '<button class="btn small red" onclick="reveal()">👀 '+bi('看答案','Reveal')+'</button>';
+  }
+  if(QUIZ.phase==='result'){
+    h += '<button class="btn green" onclick="nextQ()">'+(QUIZ.idx<QUIZ.list.length-1 ? '➡️ '+bi('下一题','Next') : '🏁 '+bi('完成','Finish'))+'</button>';
+  }
+  h += '</div>';
+  return h;
+}
+function quitQuiz(){ QUIZ=null; go('home'); }
+function pad(k){
+  if(QUIZ.phase!=='answer' && QUIZ.phase!=='retry') return;
+  if(k==='del'){ QUIZ.input=QUIZ.input.slice(0,-1); }
+  else if(k==='-'){
+    if(QUIZ.input.indexOf('-')===-1) QUIZ.input='-'+QUIZ.input;
+  }
+  else if(k==='.'){
+    if(QUIZ.input.indexOf('.')===-1 && QUIZ.input!=='' && QUIZ.input!=='-') QUIZ.input+='.';
+  }
+  else if(QUIZ.input==='-'){ QUIZ.input='-'+k; }
+  else { QUIZ.input=(QUIZ.input+k).slice(0,7); }
+  var d=$('numdisp'); if(d) d.innerHTML = QUIZ.input==='' ? '&nbsp;' : esc(QUIZ.input);
+}
+function useHint(){
+  if(QUIZ.phase!=='answer' && QUIZ.phase!=='retry') return;
+  var q=QUIZ.list[QUIZ.idx].q;
+  QUIZ.hintUsed=true;
+  var hb=$('hintbox'); if(hb){ hb.style.display='block'; hb.innerHTML='💡 '+bi(q.hint.zh,q.hint.en); }
+  if(QUIZ.attempts===0) toast(bi('看了提示，本题最多 2 星','Hint used — max 2 stars this question'));
+}
+function grade(ok, earned){
+  var item=QUIZ.list[QUIZ.idx], q=item.q;
+  if(!state.qStat[q.id]) state.qStat[q.id]={stars:0,attempts:0,correct:false,hintUsed:false};
+  var st=state.qStat[q.id];
+  st.attempts++;
+  st.hintUsed = st.hintUsed || QUIZ.hintUsed;
+  syncPushSoon();
+  var fb=$('fb'), ex=$('expbox');
+  if(ok){
+    st.correct=true;
+    st.stars=Math.max(st.stars, earned);
+    state.stars += earned; QUIZ.stars += earned;
+    if(q.custom){ state.customCorrect++; }
+    addToday();
+    fb.className='fb good'; fb.style.display='block';
+    fb.innerHTML='🎉 '+bi('答对了！+'+earned+' 星','Correct! +'+earned+' stars');
+    ex.className='expbox'; ex.style.display='block';
+    ex.innerHTML='📖 '+bi(q.exp.zh,q.exp.en);
+    sndOk();
+    if(QUIZ.mode==='practice' && state.wrongBook.indexOf(q.id)!==-1){
+      state.wrongBook=state.wrongBook.filter(function(x){return x!==q.id;});
+      state.wrongFixed++;
+    }
+    if(q.custom && state.customCorrect>=3) checkBadges();
+    QUIZ.phase='result';
+    checkBadges();
+    saveState();
+    setTimeout(confettiSmall, 250);
+    rerenderQuiz();
+  }else{
+    st.correct=false;
+    if(st.stars>0) st.stars=0; /* retry failed — keep 0 */
+    fb.className='fb bad'; fb.style.display='block';
+    fb.innerHTML='🤔 '+bi('再想想，你可以的！','Think again — you can do it!');
+    sndBad();
+    if(QUIZ.attempts>=2){
+      QUIZ.phase='result';
+      if(QUIZ.mode==='level' && state.wrongBook.indexOf(q.id)===-1) state.wrongBook.push(q.id);
+      ex.className='expbox bad'; ex.style.display='block';
+      ex.innerHTML='📖 '+bi(q.exp.zh,q.exp.en);
+      saveState();
+      rerenderQuiz();
+    }else{
+      QUIZ.phase='retry';
+      var hb=$('hintbox'); if(hb){ hb.style.display='block'; hb.innerHTML='💡 '+bi(q.hint.zh,q.hint.en); }
+      rerenderQuiz();
+    }
+  }
+}
+function mc(oi){
+  if(QUIZ.phase!=='answer' && QUIZ.phase!=='retry') return;
+  QUIZ.attempts++;
+  var item=QUIZ.list[QUIZ.idx], q=item.q;
+  var earned = (QUIZ.attempts===1 ? (QUIZ.hintUsed?2:3) : 1);
+  if(oi===q.ans){ grade(true, earned); }
+  else{ grade(false, earned); }
+}
+function submitNum(){
+  if(QUIZ.phase!=='answer' && QUIZ.phase!=='retry') return;
+  if(QUIZ.input==='' || QUIZ.input==='-' || QUIZ.input==='.' || QUIZ.input==='-.'){
+    toast(bi('先输入答案','Type your answer first')); return;
+  }
+  QUIZ.attempts++;
+  var item=QUIZ.list[QUIZ.idx], q=item.q;
+  var earned = (QUIZ.attempts===1 ? (QUIZ.hintUsed?2:3) : 1);
+  var val=parseFloat(QUIZ.input);
+  if(isNaN(val)){ toast(bi('请输入有效数字','Enter a valid number')); QUIZ.attempts--; return; }
+  if(val===q.ans){ grade(true, earned); }
+  else{ grade(false, earned); }
+}
+function reveal(){
+  var item=QUIZ.list[QUIZ.idx], q=item.q;
+  if(!state.qStat[q.id]) state.qStat[q.id]={stars:0,attempts:0,correct:false,hintUsed:false};
+  var st=state.qStat[q.id];
+  st.correct=false; st.stars=0;
+  if(QUIZ.mode==='level' && state.wrongBook.indexOf(q.id)===-1) state.wrongBook.push(q.id);
+  saveState();
+  var fb=$('fb'); fb.className='fb bad'; fb.style.display='block';
+  fb.innerHTML='😅 '+bi('没关系，看看讲解吧','No worries — read the explanation');
+  var ex=$('expbox'); ex.className='expbox bad'; ex.style.display='block';
+  ex.innerHTML='📖 '+bi(q.exp.zh,q.exp.en);
+  QUIZ.phase='result';
+  rerenderQuiz();
+}
+function rerenderQuiz(){
+  var app=$('app');
+  app.innerHTML=rQuiz();
+  /* 重绘后恢复 hint/exp 显示状态 */
+  var item=QUIZ.list[QUIZ.idx], q=item.q;
+  if(QUIZ.hintUsed && $('hintbox')){ $('hintbox').style.display='block'; $('hintbox').innerHTML='💡 '+bi(q.hint.zh,q.hint.en); }
+  if(QUIZ.phase==='result'){
+    var fb=$('fb');
+    var st=state.qStat[q.id];
+    if(st && st.correct){ fb.className='fb good'; fb.style.display='block'; fb.innerHTML='🎉 '+bi('答对了！','Correct!'); }
+    else{ fb.className='fb bad'; fb.style.display='block'; fb.innerHTML='😅 '+bi('没关系，看看讲解吧','No worries — read the explanation'); }
+    var ex=$('expbox'); ex.className='expbox'+(st&&!st.correct?' bad':''); ex.style.display='block';
+    ex.innerHTML='📖 '+bi(q.exp.zh,q.exp.en);
+  }
+}
+function nextQ(){
+  QUIZ.idx++;
+  QUIZ.input=''; QUIZ.phase='answer'; QUIZ.hintUsed=false; QUIZ.attempts=0;
+  if(QUIZ.idx>=QUIZ.list.length){
+    finishLevel();
+    return;
+  }
+  render();
+}
+function finishLevel(){
+  if(QUIZ.mode==='level'){
+    var key=levelKey(QUIZ.theme,QUIZ.level);
+    state.levelStars[key]=Math.max(state.levelStars[key]||0, QUIZ.stars);
+    saveState();
+    go('result');
+  }else{
+    QUIZ=null; go('wrong');
+  }
+}
+function confettiSmall(){
+  for(var i=0;i<26;i++){
+    (function(){
+      var c=document.createElement('div');
+      c.className='confetti';
+      c.style.left=Math.random()*100+'vw';
+      c.style.background=['#ff9f43','#5f9df7','#a55eea','#2ecc71','#feca57'][Math.floor(Math.random()*5)];
+      c.style.animationDuration=(1.2+Math.random()*1.2)+'s';
+      document.body.appendChild(c);
+      setTimeout(function(){ if(c.parentNode) c.parentNode.removeChild(c); },3000);
+    })();
+  }
+}
+
+/* ---------- 结算页 ---------- */
+function rResult(){
+  var key=levelKey(QUIZ.theme,QUIZ.level);
+  var stars=state.levelStars[key]||0;
+  var max=QUIZ.max;
+  var pct=stars/max;
+  var emoji = pct>=0.85?'🌟':(pct>=0.6?'😊':'💪');
+  var msg = pct>=0.85?bi('太棒了，数学小达人！','Amazing work, math star!'):(pct>=0.6?bi('不错哦，继续加油！','Good job — keep going!'):bi('别灰心，多练几次就会了！','Don\'t give up — practise makes perfect!'));
+  var h='<div class="card pop" style="padding:28px 16px">';
+  h += '<div class="resbig">'+emoji+'</div>';
+  h += '<div class="resmsg">'+msg+'</div>';
+  h += '<div class="resstars">';
+  for(var i=0;i<Math.round(stars/3);i++) h+='⭐';
+  h += '</div>';
+  h += '<div class="hud"><div><div class="v">'+stars+'</div><div class="k">'+bi('获得星星','Stars')+'</div></div>' +
+       '<div><div class="v">'+QUIZ.stars+'</div><div class="k">'+bi('本关所得','This run')+'</div></div></div>';
+  h += '<button class="btn orange" onclick="retryLevel()">🔁 '+bi('再玩一次','Play again')+'</button>';
+  h += '<button class="btn green" onclick="go(\'theme\')">🗺️ '+bi('返回地图','Back to map')+'</button>';
+  h += '</div>';
+  return h;
+}
+function retryLevel(){
+  startQuiz(QUIZ.theme, QUIZ.level);
+}
+
+/* ---------- 徽章页 ---------- */
+function rBadges(){
+  var h='<div class="topbar"><button class="backlink" onclick="go(\'home\')">← '+bi('返回','Back')+'</button><div></div></div>';
+  h += '<div class="card"><div class="t" style="font-size:20px; font-weight:800">🏅 '+bi('我的徽章','My Badges')+'</div>' +
+       '<div class="subtitle">'+bi('已获得 '+state.badges.length+' / '+BADGES.length+' 枚','Earned '+state.badges.length+' / '+BADGES.length)+'</div></div>';
+  BADGES.forEach(function(b){
+    var got=state.badges.indexOf(b.id)!==-1;
+    h += '<div class="badge'+(got?'':' off')+'"><div class="ic">'+(got?b.ic:'🔒')+'</div>' +
+         '<div><div class="nm">'+bi(b.zh,b.en)+'</div><div class="ds">'+bi(b.desc.zh,b.desc.en)+'</div></div></div>';
+  });
+  return h;
+}
+
+/* ---------- 错题本 ---------- */
+function rWrong(){
+  var h='<div class="topbar"><button class="backlink" onclick="go(\'home\')">← '+bi('返回','Back')+'</button><div></div></div>';
+  h += '<div class="card"><div class="t" style="font-size:20px; font-weight:800">📗 '+bi('错题本','Wrong Book')+'</div>' +
+       '<div class="subtitle">'+bi('已纠正 '+state.wrongFixed+' 道','Fixed '+state.wrongFixed)+'</div></div>';
+  if(!state.wrongBook.length){
+    h += '<div class="card" style="text-align:center; padding:30px 16px"><div style="font-size:44px">🎉</div>' +
+         '<div style="margin-top:8px">'+bi('没有错题，太棒了！','No wrong questions — awesome!')+'</div></div>';
+  }else{
+    h += '<div class="card"><button class="btn orange" onclick="startPractice()">✏️ '+bi('开始重练（'+state.wrongBook.length+' 题）','Practise ('+state.wrongBook.length+')')+'</button></div>';
+    h += '<div class="card"><h3>'+bi('错题列表','List')+'</h3>';
+    state.wrongBook.forEach(function(id){
+      var q=null;
+      BUILTIN.forEach(function(b){ if(b.id===id) q=b; });
+      state.customQs.forEach(function(b){ if(b.id===id) q=b; });
+      if(q) h += '<div class="qa">'+bi(q.q.zh,q.q.en)+'</div>';
+    });
+    h += '</div>';
+  }
+  return h;
+}
+
+/* ---------- 奖励兑换 ---------- */
+function rRewards(){
+  var h='<div class="topbar"><button class="backlink" onclick="go(\'home\')">← '+bi('返回','Back')+'</button><div></div></div>';
+  h += '<div class="card"><div class="t" style="font-size:20px; font-weight:800">🎁 '+bi('兑换奖励','Reward Shop')+'</div>' +
+       '<div class="subtitle">⭐ '+bi('我的星星','My stars')+': <b style="color:var(--warn)">'+state.stars+'</b> · ' +
+       bi('攒够星星就能兑换爸爸妈妈准备的奖励哦！','Save stars to redeem rewards from your parents!')+'</div></div>';
+  state.rewards.forEach(function(r){
+    var done=state.redeemed.indexOf(r.id)!==-1;
+    var enough=state.stars>=r.cost;
+    h += '<div class="card" style="display:flex; align-items:center; justify-content:space-between">' +
+         '<div><div style="font-weight:700; font-size:16px">'+bi(r.zh,r.en)+'</div>' +
+         '<div style="color:var(--warn); font-weight:700">⭐ '+r.cost+'</div></div>';
+    if(done) h += '<button class="btn small" disabled style="background:#dde3f0; color:#8a93a6">✅ '+bi('已兑换','Redeemed')+'</button>';
+    else if(enough) h += '<button class="btn small green" onclick="redeem(\''+r.id+'\')">'+bi('兑换','Redeem')+'</button>';
+    else h += '<button class="btn small" disabled style="background:#dde3f0; color:#8a93a6">'+bi('还差 '+(r.cost-state.stars)+' 星','Need '+(r.cost-state.stars)+' more')+'</button>';
+    h += '</div>';
+  });
+  h += '<div class="card"><div class="note">'+bi('兑换后找爸爸妈妈领奖哦！','After redeeming, claim your prize from your parents!')+'</div></div>';
+  return h;
+}
+function redeem(id){
+  var r=null;
+  state.rewards.forEach(function(x){ if(x.id===id) r=x; });
+  if(!r) return;
+  if(state.redeemed.indexOf(id)!==-1){ toast(bi('已经兑换过啦','Already redeemed')); return; }
+  if(state.stars<r.cost){ toast(bi('星星还不够哦','Not enough stars yet')); return; }
+  state.stars-=r.cost; state.redeemed.push(id); saveState(); syncPushSoon();
+  sndOk(); confettiSmall();
+  toast('🎉 '+bi('兑换成功！去找爸爸妈妈领奖吧','Redeemed! Go claim your prize'));
+  render();
+}
+
+/* ---------- 家长模式 ---------- */
+var parentTab='bank';
+var pinOk=false;
+function rParent(){
+  if(!pinOk){
+    return '<div class="card" style="margin-top:40px; padding:26px 16px">' +
+      '<div style="text-align:center; font-size:44px">🔒</div>' +
+      '<div style="text-align:center; font-weight:800; margin-top:8px">'+bi('家长模式','Parent Mode')+'</div>' +
+      '<div class="subtitle" style="text-align:center">'+bi('请输入 4 位密码','Enter the 4-digit PIN')+'</div>' +
+      '<input type="password" id="pin" maxlength="4" inputmode="numeric" placeholder="••••">' +
+      '<button class="btn" onclick="tryPin()">'+bi('进入','Enter')+'</button>' +
+      '<button class="btn ghost" onclick="go(\'home\')">'+bi('返回','Back')+'</button>' +
+      '<div class="note" style="text-align:center">'+bi('初始密码 2468，可在“设置”中修改','Default PIN is 2468 — change it in Settings')+'</div></div>';
+  }
+  var h='<div class="topbar"><button class="backlink" onclick="pinOk=false; parentTab=\'bank\'; go(\'parent\')">🔒 '+bi('锁定','Lock')+'</button>' +
+       '<div style="color:#fff; font-weight:700">'+bi('家长中心','Parent Center')+'</div><div></div></div>';
+  h += '<div class="tabs">' +
+       '<button class="'+(parentTab==='bank'?'on':'')+'" onclick="parentTab=\'bank\'; render()">'+bi('题库','Bank')+'</button>' +
+       '<button class="'+(parentTab==='addq'?'on':'')+'" onclick="parentTab=\'addq\'; render()">'+bi('出题','Add Q')+'</button>' +
+       '<button class="'+(parentTab==='rewards'?'on':'')+'" onclick="parentTab=\'rewards\'; render()">'+bi('奖励','Rewards')+'</button>' +
+       '<button class="'+(parentTab==='data'?'on':'')+'" onclick="parentTab=\'data\'; render()">'+bi('数据','Data')+'</button>' +
+       '<button class="'+(parentTab==='settings'?'on':'')+'" onclick="parentTab=\'settings\'; render()">'+bi('设置','Settings')+'</button>' +
+       '</div>';
+  h += '<div class="card">' + parentBody() + '</div>';
+  return h;
+}
+function tryPin(){
+  var v=$('pin').value;
+  if(v===state.pin){ pinOk=true; render(); }
+  else{ toast(bi('密码不对哦','Wrong PIN')); }
+}
+function parentBody(){
+  if(parentTab==='bank') return pBank();
+  if(parentTab==='addq') return pAddQ();
+  if(parentTab==='rewards') return pRewards();
+  if(parentTab==='data') return pData();
+  if(parentTab==='settings') return pSettings();
+}
+function pBank(){
+  var h='<h3>'+bi('全部题目与讲解','All questions & explanations')+'</h3>' +
+        '<select id="bankFilter" onchange="renderBank()">' +
+        '<option value="all">'+bi('全部主题','All themes')+'</option>' +
+        '<option value="fm">🔢 '+bi('因数与倍数','Factors & Multiples')+'</option>' +
+        '<option value="dn">🌡️ '+bi('正负数','Directed Numbers')+'</option>' +
+        '<option value="ae">📐 '+bi('代数表达式','Algebraic Expressions')+'</option></select>' +
+        '<div id="bankList" style="margin-top:10px">'+bankList('all')+'</div>';
+  return h;
+}
+function renderBank(){
+  var f=$('bankFilter'); var v=f?f.value:'all';
+  $('bankList').innerHTML=bankList(v);
+}
+function bankList(filter){
+  var all=BUILTIN.concat(state.customQs).filter(function(q){ return filter==='all'||q.theme===filter; });
+  var h='';
+  all.forEach(function(q){
+    var th=THEMES[q.theme];
+    var ansTxt = q.type==='mc' ? q.options[q.ans].zh : q.ans;
+    h += '<div class="qa"><div><b>'+th.icon+' '+bi(q.q.zh,q.q.en)+'</b>' +
+         '<span style="color:var(--sub); font-size:12px"> · L'+q.level+(q.custom?' · '+bi('自编','custom'):'')+'</span></div>' +
+         '<div class="a" style="margin-top:4px">'+bi('答案','Answer')+': '+esc(ansTxt)+'</div>' +
+         '<div class="e">💡 '+bi(q.hint.zh,q.hint.en)+'</div>' +
+         '<div class="e">📖 '+bi(q.exp.zh,q.exp.en)+'</div>' +
+         (q.custom ? '<button class="del" onclick="delCustom(\''+q.id+'\')">🗑 '+bi('删除此题','Delete')+'</button>' : '') +
+         '</div>';
+  });
+  if(!all.length) h='<div class="note">'+bi('没有题目','No questions')+'</div>';
+  return h;
+}
+function delCustom(id){
+  state.customQs=state.customQs.filter(function(q){return q.id!==id;});
+  saveState(); syncPushSoon(); renderBank();
+}
+function pAddQ(){
+  return '<h3>'+bi('添加自定义题目','Add a custom question')+'</h3>' +
+  '<div class="row2"><div><label class="f">'+bi('主题','Theme')+'<select id="nq_theme">' +
+    '<option value="fm">🔢 '+bi('因数与倍数','Factors')+'</option>' +
+    '<option value="dn">🌡️ '+bi('正负数','Directed Numbers')+'</option>' +
+    '<option value="ae">📐 '+bi('代数表达式','Algebraic')+'</option></select></label></div>' +
+  '<div><label class="f">'+bi('难度','Level')+'<select id="nq_level">' +
+    '<option value="1">1 '+bi('热身','Warm-up')+'</option><option value="2">2 '+bi('挑战','Challenge')+'</option><option value="3">3 '+bi('高手','Master')+'</option>' +
+    '</select></label></div></div>' +
+  '<div class="row2"><div><label class="f">'+bi('题型','Type')+'<select id="nq_type" onchange="toggleTypeForm()">' +
+    '<option value="mc">'+bi('选择题','Multiple choice')+'</option><option value="num">'+bi('填空题（数字）','Number answer')+'</option>' +
+    '</select></label></div></div>' +
+  '<label class="f">'+bi('题目（中文）','Question (Chinese)')+'<input type="text" id="nq_qzh" placeholder="如：12 的因数有几个？"></label>' +
+  '<label class="f">'+bi('题目（英文，可选）','Question (English, optional)')+'<input type="text" id="nq_qen" placeholder="How many factors does 12 have?"></label>' +
+  '<div id="mcOpts"><label class="f">'+bi('选项（每行一个，2–4 个）','Options (one per line, 2–4)')+'<textarea id="nq_opts" rows="3" placeholder="3&#10;5&#10;7&#10;9"></textarea></label>' +
+  '<label class="f">'+bi('正确选项序号（从 1 开始）','Correct option number (from 1)')+'<input type="number" id="nq_ansIdx" min="1" max="4" value="1"></label></div>' +
+  '<div id="numOpts" style="display:none"><label class="f">'+bi('正确答案（数字）','Correct answer (number)')+'<input type="number" id="nq_ansNum"></label></div>' +
+  '<label class="f">'+bi('提示（可选）','Hint (optional)')+'<input type="text" id="nq_hint" placeholder="'+bi('给孩子的提示','A hint for the child')+'"></label>' +
+  '<label class="f">'+bi('讲解（可选）','Explanation (optional)')+'<input type="text" id="nq_exp" placeholder="'+bi('怎么算出答案','How to work it out')+'"></label>' +
+  '<button class="btn green" style="margin-top:14px" onclick="saveCustomQ()">➕ '+bi('保存题目','Save question')+'</button>';
+}
+function toggleTypeForm(){
+  var t=$('nq_type').value;
+  $('mcOpts').style.display = t==='mc' ? 'block':'none';
+  $('numOpts').style.display = t==='num' ? 'block':'none';
+}
+function saveCustomQ(){
+  var theme=$('nq_theme').value, level=parseInt($('nq_level').value,10);
+  var type=$('nq_type').value;
+  var qzh=$('nq_qzh').value.trim(), qen=$('nq_qen').value.trim();
+  var hint=$('nq_hint').value.trim(), exp=$('nq_exp').value.trim();
+  if(!qzh){ toast(bi('请填写题目','Please write the question')); return; }
+  var q={id:uid(), theme:theme, level:level, type:type, custom:true,
+         q:{zh:qzh, en:qen||qzh},
+         hint:{zh:hint||'再想一想', en:''},
+         exp:{zh:exp||'见家长模式题库', en:''}};
+  if(type==='mc'){
+    var lines=$('nq_opts').value.split(/\n/).map(function(s){return s.trim();}).filter(Boolean);
+    if(lines.length<2){ toast(bi('选择题至少 2 个选项','Need at least 2 options')); return; }
+    if(lines.length>4) lines=lines.slice(0,4);
+    var ai=parseInt($('nq_ansIdx').value,10)-1;
+    if(ai<0||ai>=lines.length){ toast(bi('正确选项序号超出范围','Answer index out of range')); return; }
+    q.options=lines.map(function(s){ return {zh:s, en:s}; });
+    q.ans=ai;
+  }else{
+    var an=parseInt($('nq_ansNum').value,10);
+    if(isNaN(an)){ toast(bi('请填写数字答案','Enter a number answer')); return; }
+    q.ans=an;
+  }
+  state.customQs.push(q); saveState(); syncPushSoon();
+  toast('✅ '+bi('题目已添加！','Question added!'));
+  parentTab='bank'; render();
+}
+
+function pRewards(){
+  var h='<h3>'+bi('奖励管理','Manage rewards')+'</h3>';
+  state.rewards.forEach(function(r){
+    h += '<div class="qa"><div style="font-weight:700">'+bi(r.zh,r.en)+' <span style="color:var(--warn)">⭐ '+r.cost+'</span></div>' +
+         '<button class="del" onclick="editReward(\''+r.id+'\')">✏️ '+bi('修改','Edit')+'</button> ' +
+         '<button class="del" onclick="delReward(\''+r.id+'\')">🗑 '+bi('删除','Delete')+'</button></div>';
+  });
+  h += '<button class="btn green" onclick="addReward()">➕ '+bi('添加奖励','Add reward')+'</button>';
+  h += '<div class="note" style="margin-top:10px">'+bi('孩子兑换记录：','Redeemed by child: ')+state.redeemed.length+' 项</div>';
+  if(state.redeemed.length){
+    h += '<h3>'+bi('已兑换','Redeemed')+'</h3>';
+    state.redeemed.forEach(function(id){
+      state.rewards.forEach(function(r){ if(r.id===id) h+='<div class="qa">✅ '+bi(r.zh,r.en)+'</div>'; });
+    });
+    h += '<button class="btn ghost" onclick="clearRedeemed()">'+bi('清空兑换记录（孩子已领奖）','Clear redeemed list (prize given)')+'</button>';
+  }
+  return h;
+}
+function addReward(){
+  var zh=prompt(bi('奖励名称（中文）','Reward name (Chinese)'),'');
+  if(!zh) return;
+  var en=prompt(bi('奖励名称（英文，可选）','Reward name (English, optional)'),'')||zh;
+  var cost=parseInt(prompt(bi('需要多少颗星？','How many stars?'),'30'),10);
+  if(isNaN(cost)||cost<1) cost=30;
+  state.rewards.push({id:uid(), zh:zh, en:en, cost:cost});
+  saveState(); syncPushSoon(); render();
+}
+function editReward(id){
+  var r=null; state.rewards.forEach(function(x){ if(x.id===id) r=x; });
+  if(!r) return;
+  var zh=prompt(bi('奖励名称（中文）','Reward name (Chinese)'),r.zh); if(!zh) return;
+  var en=prompt(bi('奖励名称（英文，可选）','Reward name (English, optional)'),r.en)||zh;
+  var cost=parseInt(prompt(bi('需要多少颗星？','How many stars?'),String(r.cost)),10);
+  if(isNaN(cost)||cost<1) cost=r.cost;
+  r.zh=zh; r.en=en; r.cost=cost;
+  saveState(); syncPushSoon(); render();
+}
+function delReward(id){
+  state.rewards=state.rewards.filter(function(r){return r.id!==id;});
+  saveState(); syncPushSoon(); render();
+}
+function clearRedeemed(){ state.redeemed=[]; saveState(); syncPushSoon(); render(); }
+
+function pData(){
+  var h='<h3>'+bi('学习数据','Learning data')+'</h3>';
+  h += '<div class="hud"><div><div class="v">⭐ '+state.stars+'</div><div class="k">'+bi('总星星','Total stars')+'</div></div>' +
+       '<div><div class="v">🔥 '+streakCount()+'</div><div class="k">'+bi('连续天数','Streak')+'</div></div>' +
+       '<div><div class="v">'+state.wrongFixed+'</div><div class="k">'+bi('已纠错题','Fixed errors')+'</div></div>' +
+       '<div><div class="v">'+state.customCorrect+'</div><div class="k">'+bi('自编题答对','Custom correct')+'</div></div></div>';
+  h += '<h3>'+bi('各关星星','Stars per level')+'</h3>';
+  h += '<div class="grid3">';
+  Object.keys(THEMES).forEach(function(t){
+    [1,2,3].forEach(function(l){
+      var key=levelKey(t,l); var st=state.levelStars[key]||0;
+      h += '<div class="mini"><div class="ic" style="font-size:16px">'+THEMES[t].icon+'</div>' +
+           '<div class="nm">L'+l+': ⭐ '+st+'/12</div></div>';
+    });
+  });
+  h += '</div>';
+  h += '<h3>'+bi('近 30 天打卡','Last 30 days')+'</h3><div class="cal">';
+  for(var i=29;i>=0;i--){
+    var d=new Date(Date.now()-i*86400000);
+    var ds=d.getFullYear()+'-'+('0'+(d.getMonth()+1)).slice(-2)+'-'+('0'+d.getDate()).slice(-2);
+    var on=state.streakDates.indexOf(ds)!==-1;
+    var today=ds===todayStr();
+    h += '<div class="'+(on?'on':'')+(today?' today':'')+'">'+d.getDate()+'</div>';
+  }
+  h += '</div>';
+  h += '<h3>'+bi('数据同步','Sync')+'</h3>';
+  h += '<div class="note">'+bi('换设备时：在旧设备点“导出”，复制代码；在新设备点“导入”粘贴。','To move to another device: export a code on the old one, then import it on the new one.')+'</div>';
+  h += '<label class="f">'+bi('导出代码','Export code')+'<input type="text" id="expCode" value="'+esc(exportCode())+'" readonly onclick="this.select()"></label>';
+  h += '<button class="btn ghost" onclick="copyCode()">📋 '+bi('复制','Copy')+'</button>';
+  h += '<label class="f">'+bi('导入代码','Import code')+'<input type="text" id="impCode" placeholder="'+bi('粘贴导出的代码','Paste exported code here')+'"></label>';
+  h += '<button class="btn ghost" onclick="importCode()">📥 '+bi('导入','Import')+'</button>';
+  return h;
+}
+function exportCode(){
+  var copy={};
+  ['childName','lang','showEn','stars','levelStars','qStat','streakDates','badges','rewards','redeemed','customQs','wrongBook','wrongFixed','customCorrect'].forEach(function(k){ copy[k]=state[k]; });
+  try{ return btoa(unescape(encodeURIComponent(JSON.stringify(copy)))); }catch(e){ return ''; }
+}
+function copyCode(){
+  var el=$('expCode'); el.select();
+  try{ document.execCommand('copy'); toast('📋 '+bi('已复制','Copied')); }catch(e){ toast(bi('请长按手动复制','Long-press to copy')); }
+}
+function importCode(){
+  var v=$('impCode').value.trim();
+  if(!v){ toast(bi('请先粘贴代码','Paste a code first')); return; }
+  try{
+    var o=JSON.parse(decodeURIComponent(escape(atob(v))));
+    var d=defaultState();
+    for(var k in d){ state[k]=(o[k]===undefined)?d[k]:o[k]; }
+    saveState();
+    toast('✅ '+bi('导入成功！','Imported!'));
+    render();
+  }catch(e){ toast(bi('代码无效，请检查','Invalid code')); }
+}
+
+function pSettings(){
+  return '<h3>'+bi('设置','Settings')+'</h3>' +
+  '<label class="f">'+bi('孩子名字','Child name')+'<input type="text" id="setName" value="'+esc(state.childName)+'"></label>' +
+  '<button class="btn ghost" onclick="saveSettings()">'+bi('保存名字','Save name')+'</button>' +
+  '<label class="f">'+bi('界面主语言','Primary language')+'<select id="setLang" onchange="state.lang=this.value; saveState(); render();">' +
+    '<option value="zh" '+(state.lang==='zh'?'selected':'')+'>中文为主 · 英文副标</option>' +
+    '<option value="en" '+(state.lang==='en'?'selected':'')+'>English first · 中文副标</option></select></label>' +
+  '<div style="margin-top:12px"><label style="display:flex; align-items:center; gap:8px; font-size:15px"><input type="checkbox" id="setEn" '+(state.showEn?'checked':'')+' onchange="state.showEn=this.checked; saveState(); render();"> '+bi('显示英文副标','Show English subtitles')+'</label></div>' +
+  '<div style="margin-top:8px"><label style="display:flex; align-items:center; gap:8px; font-size:15px"><input type="checkbox" id="setSnd" '+(state.sound?'checked':'')+' onchange="state.sound=this.checked; saveState(); render();"> '+bi('音效','Sound effects')+'</label></div>' +
+  '<label class="f">'+bi('修改家长密码（4 位数字）','Change parent PIN (4 digits)')+'<input type="password" id="setPin" maxlength="4" inputmode="numeric" placeholder="'+esc(state.pin)+'"></label>' +
+  '<button class="btn ghost" onclick="changePin()">'+bi('保存密码','Save PIN')+'</button>' +
+  '<h3 style="margin-top:16px">☁️ '+bi('云端同步','Cloud sync')+'</h3>' + syncBoxHtml() +
+  '<h3 style="margin-top:16px">'+bi('危险操作','Danger zone')+'</h3>' +
+  '<button class="btn red" onclick="resetAll()">🗑 '+bi('重置所有进度','Reset all progress')+'</button>' +
+  '<div class="note" style="margin-top:10px">'+bi('关于本应用','About')+': Math Planet v2.0 · IB Grade 6 · '+bi('因数与倍数 / 正负数 / 代数表达式 / 小数与分数 / 统计 / 角与多边形 / 比','Factors & Multiples / Directed Numbers / Algebraic Expressions / Decimals & Fractions / Statistics / Angles & Polygons / Ratio')+'</div>';
+}
+function saveSettings(){
+  var n=$('setName').value.trim();
+  if(n) state.childName=n.slice(0,12);
+  saveState(); syncPushSoon(); toast('✅ '+bi('已保存','Saved')); render();
+}
+function changePin(){
+  var v=$('setPin').value;
+  if(!/^\d{4}$/.test(v)){ toast(bi('请输入 4 位数字','PIN must be 4 digits')); return; }
+  state.pin=v; saveState(); toast('✅ '+bi('密码已修改','PIN changed')); render();
+}
+function resetAll(){
+  if(!confirm(bi('确定要重置所有进度和星星吗？此操作不可恢复。','Reset ALL progress and stars? This cannot be undone.'))) return;
+  state=defaultState(); saveState(); syncPushSoon(); render();
+}
+
+/* ============================================================
+   云端同步（自托管同步服务器）
+   协议: GET/PUT  {server}/sync/{room}  (JSON)
+   两台设备设置相同的服务器地址，并加入同一个房间码即可互通。
+   ============================================================ */
+var syncTimer = null, pushDebounce = null;
+function syncEnabled(){ return state.sync && state.sync.enabled && state.sync.server && state.sync.room; }
+function syncURL(){
+  var s=state.sync;
+  return String(s.server).replace(/\/+$/,'') + '/sync/' + encodeURIComponent(s.room);
+}
+function cloudWrite(payload){
+  return fetch(syncURL(), {method:'PUT', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)})
+    .then(function(r){ if(!r.ok) throw new Error('put '+r.status); });
+}
+function cloudRead(){
+  return fetch(syncURL(), {method:'GET'})
+    .then(function(r){ if(!r.ok) throw new Error('get '+r.status); return r.json(); })
+    .catch(function(){ return null; });
+}
+function syncPayload(){
+  var p={};
+  ['childName','lang','showEn','stars','levelStars','qStat','streakDates','badges','rewards','redeemed','customQs','wrongBook','wrongFixed','customCorrect','updatedAt'].forEach(function(k){ p[k]=state[k]; });
+  p.updatedAt=Date.now();
+  return p;
+}
+function syncPush(){
+  if(!syncEnabled()) return Promise.resolve(false);
+  var p=syncPayload();
+  return cloudWrite(p).then(function(){ state.sync.lastSync=Date.now(); saveState(); return true; }).catch(function(){ return false; });
+}
+function syncPushSoon(){
+  if(!syncEnabled()) return;
+  if(pushDebounce) clearTimeout(pushDebounce);
+  pushDebounce=setTimeout(function(){ syncPush(); }, 800);
+}
+function syncPoll(){
+  if(!syncEnabled()) return Promise.resolve(false);
+  return cloudRead().then(function(remote){
+    if(!remote || typeof remote!=='object') return false;
+    var merged=mergeStates(state, remote);
+    if(!merged) return false;
+    var changed = JSON.stringify(mergeCompare(state)) !== JSON.stringify(mergeCompare(merged));
+    state=merged; state.sync.lastSync=Date.now(); saveState();
+    if(changed && (VIEW==='home'||VIEW==='theme'||VIEW==='parent'||VIEW==='badges'||VIEW==='rewards'||VIEW==='wrong')) render();
+    return changed;
+  }).catch(function(){ return false; });
+}
+function mergeCompare(s){
+  var c={};
+  ['stars','levelStars','qStat','streakDates','badges','wrongBook','wrongFixed','customCorrect','redeemed'].forEach(function(k){ c[k]=s[k]; });
+  return c;
+}
+function mergeStates(local, remote){
+  if(!remote || typeof remote!=='object') return null;
+  var m=JSON.parse(JSON.stringify(local));
+  function union(a,b){ var s=(a||[]).slice(); (b||[]).forEach(function(x){ if(s.indexOf(x)===-1) s.push(x); }); return s; }
+  /* 单调合并：只增不减 */
+  m.streakDates=union(local.streakDates, remote.streakDates);
+  m.badges=union(local.badges, remote.badges);
+  m.wrongBook=union(local.wrongBook, remote.wrongBook);
+  m.redeemed=union(local.redeemed, remote.redeemed);
+  m.wrongFixed=Math.max(local.wrongFixed||0, remote.wrongFixed||0);
+  m.customCorrect=Math.max(local.customCorrect||0, remote.customCorrect||0);
+  m.levelStars={};
+  Object.keys(local.levelStars||{}).forEach(function(k){ m.levelStars[k]=local.levelStars[k]; });
+  Object.keys(remote.levelStars||{}).forEach(function(k){ m.levelStars[k]=Math.max(m.levelStars[k]||0, remote.levelStars[k]||0); });
+  m.qStat={};
+  var qids=union(Object.keys(local.qStat||{}), Object.keys(remote.qStat||{}));
+  qids.forEach(function(id){
+    var a=local.qStat[id]||{stars:0,attempts:0,correct:false,hintUsed:false};
+    var b=remote.qStat[id]||{stars:0,attempts:0,correct:false,hintUsed:false};
+    m.qStat[id]={stars:Math.max(a.stars||0,b.stars||0), attempts:Math.max(a.attempts||0,b.attempts||0), correct:!!(a.correct||b.correct), hintUsed:!!(a.hintUsed||b.hintUsed)};
+  });
+  /* 自定义题：按 id 合并（同 id 取远程） */
+  m.customQs=(local.customQs||[]).slice();
+  (remote.customQs||[]).forEach(function(q){
+    var i=-1; m.customQs.forEach(function(x,j){ if(x.id===q.id) i=j; });
+    if(i===-1) m.customQs.push(q); else m.customQs[i]=q;
+  });
+  /* 奖励：按 id 合并 */
+  var rew={}; (local.rewards||[]).forEach(function(r){ rew[r.id]=r; });
+  (remote.rewards||[]).forEach(function(r){ rew[r.id]=r; });
+  m.rewards=Object.keys(rew).map(function(k){ return rew[k]; });
+  /* 可变字段：取 updatedAt 更新的那一边 */
+  var lu=local.updatedAt||0, ru=remote.updatedAt||0;
+  if(ru>lu){
+    m.childName=remote.childName!==undefined?remote.childName:m.childName;
+    m.lang=remote.lang||m.lang;
+    m.showEn=(remote.showEn===undefined)?m.showEn:remote.showEn;
+    m.stars=(remote.stars===undefined)?m.stars:remote.stars;
+  }
+  m.updatedAt=Date.now();
+  return m;
+}
+function startSyncLoop(){
+  stopSyncLoop();
+  syncTimer=setInterval(syncPoll, 6000);
+}
+function stopSyncLoop(){ if(syncTimer){ clearInterval(syncTimer); syncTimer=null; } }
+function enableSync(){
+  var srv=(state.sync.server||'').trim();
+  if(!srv){ toast(bi('请先填写同步服务器地址（见 README 部署说明）','Set the sync server URL first (see README)')); return; }
+  var room='mp'+Math.random().toString(36).slice(2,10)+Math.random().toString(36).slice(2,6);
+  state.sync.server=srv; state.sync.room=room; state.sync.enabled=true; state.sync.lastSync=0;
+  saveState();
+  toast('⏳ '+bi('正在连接同步服务器…','Connecting to sync server…'));
+  syncPush().then(function(ok){
+    if(ok){
+      toast('✅ '+bi('云端同步已开启！','Cloud sync is ON!'));
+      startSyncLoop(); render();
+    }else{
+      state.sync.enabled=false; saveState();
+      toast('❌ '+bi('连接失败，请检查服务器地址','Connection failed — check the URL'));
+      render();
+    }
+  });
+}
+function joinSync(code){
+  code=(code||'').trim();
+  if(!code){ toast(bi('请输入同步码','Enter the sync code')); return; }
+  var srv=(state.sync.server||'').trim();
+  if(!srv){ toast(bi('请先填写同步服务器地址','Set the sync server URL first')); return; }
+  state.sync.server=srv; state.sync.room=code; state.sync.enabled=true; state.sync.lastSync=0;
+  saveState();
+  toast('⏳ '+bi('正在加入同步…','Joining sync…'));
+  cloudRead().then(function(remote){
+    if(remote && typeof remote==='object'){
+      var merged=mergeStates(state, remote);
+      if(merged){ state=merged; saveState(); }
+    }
+    syncPush().then(function(ok){
+      if(ok){ toast('✅ '+bi('已加入同步！','Joined sync!')); startSyncLoop(); render(); }
+      else{ state.sync.enabled=false; saveState(); toast('❌ '+bi('加入失败，请检查同步码和服务器','Join failed — check code and server')); render(); }
+    });
+  });
+}
+function disableSync(){
+  stopSyncLoop();
+  state.sync.enabled=false; saveState(); render();
+  toast(bi('已关闭云端同步','Cloud sync turned off'));
+}
+function lastSyncText(){
+  if(!state.sync.lastSync) return bi('尚未同步','Not synced yet');
+  var d=new Date(state.sync.lastSync);
+  var hh=('0'+d.getHours()).slice(-2), mm=('0'+d.getMinutes()).slice(-2), ss=('0'+d.getSeconds()).slice(-2);
+  return hh+':'+mm+':'+ss;
+}
+function saveSyncServer(){
+  var v=$('syncServer').value.trim().replace(/\/+$/,'');
+  state.sync.server=v; saveState();
+  toast('✅ '+bi('服务器地址已保存','Server URL saved'));
+  render();
+}
+function copySyncCode(){
+  var el=$('syncCode');
+  if(!el) return;
+  el.select();
+  try{ document.execCommand('copy'); toast('📋 '+bi('已复制','Copied')); }catch(e){ toast(bi('请长按手动复制','Long-press to copy')); }
+}
+function syncBoxHtml(){
+  var h='<div id="syncBox">';
+  if(!state.sync.enabled){
+    h += '<div class="note">'+bi('云端同步：两台设备（如家长手机 + 孩子手机）输入同一个同步码，进度自动互通（约 6 秒同步一次）。','Cloud sync: set the same server URL and room code on two devices to keep progress in sync (every ~6 s).')+'</div>';
+    h += '<label class="f">'+bi('同步服务器地址','Sync server URL')+'<input type="text" id="syncServer" value="'+esc(state.sync.server||'')+'" placeholder="https://xxx.onrender.com"></label>';
+    h += '<button class="btn ghost" onclick="saveSyncServer()">💾 '+bi('保存地址','Save URL')+'</button>';
+    h += '<button class="btn green" onclick="enableSync()">☁️ '+bi('开启云端同步（生成新同步码）','Turn on cloud sync (new code)')+'</button>';
+    h += '<label class="f">'+bi('或：输入另一台设备的同步码加入','Or paste the other device\'s sync code')+'<input type="text" id="joinCode" placeholder="mpxxxxxxxxxxxx"></label>';
+    h += '<button class="btn orange" onclick="joinSync($(\'joinCode\').value)">🔗 '+bi('加入同步','Join sync')+'</button>';
+    h += '<div class="note" style="margin-top:8px">'+bi('没有服务器？用 README 里的方法部署一个免费同步服务器（约 5 分钟），或继续使用“数据 → 进度码”手动同步。','No server? Deploy the free sync server in the README (~5 min), or keep using the progress code under Data.')+'</div>';
+  }else{
+    h += '<div class="qa"><div style="font-weight:700">☁️ '+bi('同步中','Syncing')+'</div>' +
+         '<div class="e">'+bi('最后同步','Last sync')+': '+lastSyncText()+' · '+
+         bi('房间','Room')+': <b>'+esc(state.sync.room)+'</b></div>' +
+         '<div class="e">'+bi('同步码','Sync code')+': <input type="text" id="syncCode" readonly value="'+esc(state.sync.room)+'" style="margin-top:4px" onclick="this.select()">' +
+         '<button class="btn small" onclick="copySyncCode()">📋 '+bi('复制','Copy')+'</button></div></div>';
+    h += '<button class="btn ghost" onclick="syncPush().then(function(){ toast(bi(\'已推送\',\'Pushed\')); })">🔄 '+bi('立即同步','Sync now')+'</button>';
+    h += '<button class="btn red" onclick="disableSync()">⏹ '+bi('关闭同步','Turn off sync')+'</button>';
+    h += '<div class="note">'+bi('在另一台设备上：填相同服务器地址 → 粘贴此同步码 → 加入同步。','On the other device: same server URL → paste this code → join.')+'</div>';
+  }
+  h += '</div>';
+  return h;
+}
+
+/* ---------- 启动 ---------- */
+function boot(){
+  loadState();
+  if(!state.rewards || !state.rewards.length) state.rewards=defaultState().rewards;
+  if(syncEnabled()) startSyncLoop();
+  go('home');
+}
+if(typeof document!=='undefined' && document.getElementById && window.document){
+  if(document.readyState==='loading'){
+    document.addEventListener('DOMContentLoaded', boot);
+  }else{
+    boot();
+  }
+}
+</script>
+</body>
+</html>
